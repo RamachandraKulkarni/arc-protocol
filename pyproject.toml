@@ -1,6 +1,6 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "arc-protocol"
@@ -43,13 +43,17 @@ dev = [
 arc-log = "arc_log.server:main"
 
 [project.urls]
-Homepage = "https://github.com/arc-protocol/arc-protocol"
-Documentation = "https://github.com/arc-protocol/arc-protocol/tree/main/docs"
-Repository = "https://github.com/arc-protocol/arc-protocol"
-Issues = "https://github.com/arc-protocol/arc-protocol/issues"
+Homepage = "https://github.com/RamachandraKulkarni/arc-protocol"
+Documentation = "https://github.com/RamachandraKulkarni/arc-protocol/tree/master/docs"
+Repository = "https://github.com/RamachandraKulkarni/arc-protocol"
+Issues = "https://github.com/RamachandraKulkarni/arc-protocol/issues"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/arc", "arc_log"]
+[tool.setuptools]
+packages = ["arc", "arc_log"]
+
+[tool.setuptools.package-dir]
+"arc" = "src/arc"
+"arc_log" = "arc_log"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

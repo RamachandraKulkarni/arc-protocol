@@ -1,10 +1,15 @@
-# ARC Protocol
+<div align="center">
+
+# ARC — Agent Receipt & Certification
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests: 58/58](https://img.shields.io/badge/tests-58%2F58-brightgreen.svg)](tests/)
 [![Protocol: v1.1](https://img.shields.io/badge/protocol-v1.1-blue.svg)](SPEC.md)
 [![Status: Unpublished Preprint](https://img.shields.io/badge/status-unpublished%20preprint-orange.svg)](paper/arc_paper.tex)
+[![PyPI](https://img.shields.io/pypi/v/arc-protocol.svg)](https://pypi.org/project/arc-protocol/)
+
+</div>
 
 **Cryptographic receipts for AI agent tool calls.**
 
