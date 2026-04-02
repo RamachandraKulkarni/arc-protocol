@@ -15,13 +15,10 @@ HOLE FOUND (see RED_TEAM_FINDINGS.md):
   stored content_hash (what was committed) without breaking the chain check.
 """
 
-
-
 from arc import ARCContext, signed_tool
 
 
 class TestLogTampering:
-
     def test_breaking_merkle_chain_at_middle_entry_detected(self, populated_log):
         """
         Attacker modifies merkle_root of entry 3, which breaks the chain at entry 4
@@ -38,6 +35,7 @@ class TestLogTampering:
         # Error format: "Chain break at sequence N: ..."
         assert len(consistency["errors"]) > 0
         import re
+
         broken_seqs = [
             int(m.group(1))
             for e in consistency["errors"]
@@ -59,6 +57,7 @@ class TestLogTampering:
         consistency = populated_log.verify_consistency()
         assert consistency["is_consistent"] is False
         import re
+
         broken_seqs = [
             int(m.group(1))
             for e in consistency["errors"]
@@ -121,12 +120,15 @@ class TestLogTampering:
         After a complete Phase 1 + Phase 2 tool call, the log entries for that receipt
         are sequenced correctly (intent before receipt).
         """
+
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def read_file(path: str, ctx: ARCContext) -> dict:
             import pathlib
+
             return {"content": pathlib.Path(path).read_text()}
 
         import os
+
         file_path = os.path.join(temp_dir, "file1.txt")
         receipt = read_file(file_path, ctx=ctx)
 
@@ -137,13 +139,9 @@ class TestLogTampering:
 
         [e["sequence_number"] for e in log_verify["entries"]]
         intent_seq = next(
-            e["sequence_number"]
-            for e in log_verify["entries"]
-            if e["entry_type"] == "intent"
+            e["sequence_number"] for e in log_verify["entries"] if e["entry_type"] == "intent"
         )
         receipt_seq = next(
-            e["sequence_number"]
-            for e in log_verify["entries"]
-            if e["entry_type"] == "receipt"
+            e["sequence_number"] for e in log_verify["entries"] if e["entry_type"] == "receipt"
         )
         assert intent_seq < receipt_seq, "Intent must precede receipt in the log"

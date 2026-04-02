@@ -96,7 +96,9 @@ def main():
         print(f"  Outcome: {p2['execution']['outcome']}")
         print(f"  Outcome hash: {p2['execution']['outcome_hash'][:32]}...")
         print()
-        print(f"✓ Phase 2 signed and committed to log at sequence {p2['log_proof']['sequence_number']}")
+        print(
+            f"✓ Phase 2 signed and committed to log at sequence {p2['log_proof']['sequence_number']}"
+        )
         print(f"  Provider: {p2['provider_attestation']['provider_name']}")
         print(f"  Signature: {p2['provider_attestation']['signature'][:32]}...")
         print()
@@ -124,8 +126,12 @@ def main():
         print(f"  Schema valid:              {'✓' if checks['schema_valid'] else '✗'}")
         print(f"  Provider signature valid:  {'✓' if checks['provider_signature_valid'] else '✗'}")
         if checks.get("inverse_signature_valid") is not None:
-            print(f"  Inverse signature valid:   {'✓' if checks['inverse_signature_valid'] else '✗'}")
-        print(f"  Sequence numbers monotonic:{'✓' if checks['sequence_numbers_monotonic'] else '✗'}")
+            print(
+                f"  Inverse signature valid:   {'✓' if checks['inverse_signature_valid'] else '✗'}"
+            )
+        print(
+            f"  Sequence numbers monotonic:{'✓' if checks['sequence_numbers_monotonic'] else '✗'}"
+        )
 
         if result["errors"]:
             print()

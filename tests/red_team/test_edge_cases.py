@@ -21,9 +21,9 @@ from arc.snapshot import SnapshotStore, capture_filesystem
 
 
 class TestEdgeCases:
-
     def test_empty_arguments_dict(self, ctx, tmp_path):
         """Tool called with no arguments beyond ctx  -  receipt still generated."""
+
         @signed_tool(resource="dict")
         def noop(ctx: ARCContext) -> dict:
             return {"done": True}
@@ -49,6 +49,7 @@ class TestEdgeCases:
         Arguments contain Unicode (Chinese, Arabic, emoji).
         canonical_json must handle multi-byte characters correctly.
         """
+
         @signed_tool(resource="dict", resource_uri_from_args="key")
         def unicode_tool(key: str, value: str, ctx: ARCContext) -> dict:
             return {"processed": value, "len": len(value)}
@@ -82,15 +83,14 @@ class TestEdgeCases:
 
     def test_receipt_id_uniqueness_across_100_calls(self, ctx, tmp_path):
         """Generate 100 receipts rapidly  -  all receipt_ids must be globally unique."""
+
         @signed_tool(resource="dict")
         def quick_noop(ctx: ARCContext) -> dict:
             return {"ok": True}
 
         receipts = [quick_noop(ctx=ctx) for _ in range(100)]
         ids = [r["receipt_id"] for r in receipts]
-        assert len(set(ids)) == 100, (
-            f"Collision detected among {len(ids)} receipt IDs"
-        )
+        assert len(set(ids)) == 100, f"Collision detected among {len(ids)} receipt IDs"
 
     def test_concurrent_tool_calls(self, tmp_path):
         """
@@ -101,14 +101,22 @@ class TestEdgeCases:
         log = ARCInMemoryLog()
         store = SnapshotStore()
         ctx1 = ARCContext(
-            agent_id="agent-1", model_version="v1", session_id="s1",
-            provider_keypair=kp, provider_name="tool-v1",
-            log=log, snapshot_store=store,
+            agent_id="agent-1",
+            model_version="v1",
+            session_id="s1",
+            provider_keypair=kp,
+            provider_name="tool-v1",
+            log=log,
+            snapshot_store=store,
         )
         ctx2 = ARCContext(
-            agent_id="agent-2", model_version="v1", session_id="s2",
-            provider_keypair=kp, provider_name="tool-v1",
-            log=log, snapshot_store=store,
+            agent_id="agent-2",
+            model_version="v1",
+            session_id="s2",
+            provider_keypair=kp,
+            provider_name="tool-v1",
+            log=log,
+            snapshot_store=store,
         )
 
         @signed_tool(resource="dict")
@@ -146,6 +154,7 @@ class TestEdgeCases:
         When the tool raises, outcome=failure and receipt is still committed.
         Failed actions must be logged  -  this is a core protocol guarantee.
         """
+
         @signed_tool(resource="dict")
         def always_fails(ctx: ARCContext) -> dict:
             raise ValueError("intentional test failure")
@@ -184,6 +193,7 @@ class TestEdgeCases:
         verify_receipt() with empty registry  -  must fail with specific error,
         not crash with an unhandled exception.
         """
+
         @signed_tool(resource="dict")
         def noop(ctx: ARCContext) -> dict:
             return {"ok": True}
@@ -204,6 +214,7 @@ class TestEdgeCases:
         verify_receipt() handles a registry where the key maps to None  -  must fail
         gracefully, not raise AttributeError or TypeError.
         """
+
         @signed_tool(resource="dict")
         def noop(ctx: ARCContext) -> dict:
             return {"ok": True}
@@ -215,9 +226,7 @@ class TestEdgeCases:
             result = verify_receipt(receipt, broken_registry)
             assert result["valid"] is False
         except Exception as e:
-            pytest.fail(
-                f"verify_receipt() raised {type(e).__name__} with None registry value: {e}"
-            )
+            pytest.fail(f"verify_receipt() raised {type(e).__name__} with None registry value: {e}")
 
     def test_rollback_of_missing_file_does_not_crash(self, tmp_path):
         """
@@ -258,6 +267,7 @@ class TestEdgeCases:
         Two receipts from the same type of call have the same structure
         (same keys at every level), just different values.
         """
+
         @signed_tool(resource="dict")
         def noop(ctx: ARCContext) -> dict:
             return {"ok": True}
@@ -288,6 +298,7 @@ class TestEdgeCases:
         Log sequence numbers must always increase. No receipt can claim a sequence
         number lower than what already exists in the log.
         """
+
         @signed_tool(resource="dict")
         def noop(ctx: ARCContext) -> dict:
             return {"ok": True}

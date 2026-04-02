@@ -118,9 +118,7 @@ def test_rollback_restores_state(ctx, temp_dir):
     receipt = delete_file(file_path, ctx=ctx)
     assert not Path(file_path).exists()
 
-    snap = ctx.snapshot_store.retrieve(
-        receipt["phase_1"]["before_state"]["snapshot_ref"]
-    )
+    snap = ctx.snapshot_store.retrieve(receipt["phase_1"]["before_state"]["snapshot_ref"])
     success = rollback_filesystem(snap)
     assert success is True
     assert Path(file_path).exists()
@@ -164,6 +162,7 @@ def test_receipt_id_format(ctx, temp_dir):
 
     receipt = read_file(str(Path(temp_dir) / "file1.txt"), ctx=ctx)
     import re
+
     assert re.match(r"^arc_[0-9A-Z]{26}$", receipt["receipt_id"])
     assert re.match(r"^intent_[0-9A-Z]{26}$", receipt["phase_1"]["intent"]["intent_id"])
 
@@ -171,6 +170,7 @@ def test_receipt_id_format(ctx, temp_dir):
 def test_schema_validation(ctx, temp_dir):
     """Receipt must pass JSON Schema validation."""
     import jsonschema
+
     schema_path = Path(__file__).parent.parent / "schemas" / "action-receipt.schema.json"
     schema = json.loads(schema_path.read_text())
 

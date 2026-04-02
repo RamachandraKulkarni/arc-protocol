@@ -261,6 +261,7 @@ def rollback_filesystem(snap: Snapshot) -> bool:
                     path.unlink()
                 elif path.is_dir():
                     import shutil
+
                     shutil.rmtree(path)
             return True
 

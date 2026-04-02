@@ -24,7 +24,6 @@ from arc.receipt import verify_receipt
 
 
 class TestReplayAttack:
-
     def _get_valid_receipt(self, ctx, temp_dir):
         file_path = str(Path(temp_dir) / "file1.txt")
 

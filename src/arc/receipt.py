@@ -197,8 +197,10 @@ class ReceiptBuilder:
         # Build inverse operation if reversible
         if is_reversible and inverse_tool and inverse_arguments is not None:
             valid_until = (
-                datetime.now(timezone.utc) + timedelta(minutes=rollback_valid_minutes)
-            ).isoformat().replace("+00:00", "Z")
+                (datetime.now(timezone.utc) + timedelta(minutes=rollback_valid_minutes))
+                .isoformat()
+                .replace("+00:00", "Z")
+            )
 
             inv_payload_obj = {
                 "inverse_arguments": inverse_arguments,
@@ -258,6 +260,7 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
     # Schema validation
     try:
         import jsonschema as _jsonschema
+
         schema = _load_schema()
         if schema:
             _jsonschema.validate(receipt, schema)
@@ -298,7 +301,9 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
             before_state_hash = phase1.get("before_state", {}).get("snapshot_hash", "")
 
             outcome_val = phase2.get("execution", {}).get("outcome", "")
-            is_reversible_val = receipt.get("phase_2", {}).get("inverse", {}).get("is_reversible", False)
+            is_reversible_val = (
+                receipt.get("phase_2", {}).get("inverse", {}).get("is_reversible", False)
+            )
 
             signing_payload = build_signing_payload(
                 receipt_id=receipt_id,

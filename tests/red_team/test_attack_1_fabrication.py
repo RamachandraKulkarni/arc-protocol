@@ -25,13 +25,13 @@ from arc.signing import canonical_json, sha256_hex
 
 
 class TestResultFabrication:
-
     def test_replaced_outcome_hash_fails_verification(self, ctx, temp_dir, registry):
         """
         Baseline: agent claims it deleted 0 files when it deleted 3.
         Most basic form of fabrication  -  changes outcome_hash to hash of fake result.
         The provider_signature was computed over the real outcome_hash, so it fails.
         """
+
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def delete_directory(path: str, ctx: ARCContext) -> dict:
             shutil.rmtree(path)
@@ -50,9 +50,9 @@ class TestResultFabrication:
 
         assert result["valid"] is False
         assert result["checks"]["provider_signature_valid"] is False
-        assert any(
-            "signature" in e.lower() for e in result["errors"]
-        ), f"Expected error naming 'signature', got: {result['errors']}"
+        assert any("signature" in e.lower() for e in result["errors"]), (
+            f"Expected error naming 'signature', got: {result['errors']}"
+        )
 
     def test_fabrication_with_correct_outcome_hash_still_caught(self, ctx, temp_dir, registry):
         """
@@ -87,6 +87,7 @@ class TestResultFabrication:
         Agent changes only one field of the result (count from N to 0).
         Even a single field change must be caught because it changes the outcome_hash.
         """
+
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def count_and_read(path: str, ctx: ARCContext) -> dict:
             files = [f for f in Path(path).rglob("*") if f.is_file()]
@@ -113,6 +114,7 @@ class TestResultFabrication:
 
         THIS TEST EXPOSES A HOLE. See RED_TEAM_FINDINGS.md: Hole 1.
         """
+
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def delete_nonexistent(path: str, ctx: ARCContext) -> dict:
             Path(path).unlink()  # raises FileNotFoundError

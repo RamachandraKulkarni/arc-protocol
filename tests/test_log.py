@@ -1,7 +1,6 @@
 """Tests for the ARCInMemoryLog."""
 
 
-
 def test_commit_intent_returns_commitment(log):
     intent = {
         "intent_id": "intent_01JTXM9KP3FABCDE12345678AB",

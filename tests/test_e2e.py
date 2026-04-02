@@ -180,6 +180,7 @@ def test_snapshot_hash_integrity(ctx, temp_dir):
 
 def test_multiple_sequential_receipts(ctx, temp_dir):
     """Multiple tool calls should generate distinct receipts with monotonic sequences."""
+
     @signed_tool(resource="filesystem", resource_uri_from_args="path")
     def read_file(path: str, ctx: ARCContext) -> dict:
         return {}

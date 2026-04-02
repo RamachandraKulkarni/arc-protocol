@@ -23,11 +23,11 @@ class ARCLogError(Exception):
 def _require_httpx():
     try:
         import httpx
+
         return httpx
     except ImportError:
         raise ImportError(
-            "httpx is required for ARCLogClient. "
-            "Install it with: pip install arc-protocol[client]"
+            "httpx is required for ARCLogClient. Install it with: pip install arc-protocol[client]"
         ) from None
 
 
@@ -254,8 +254,7 @@ class ARCInMemoryLog:
             if prev_root is not None and prev != prev_root:
                 is_consistent = False
                 errors.append(
-                    f"Chain break at sequence {seq}: "
-                    f"expected previous_root={prev_root}, got {prev}"
+                    f"Chain break at sequence {seq}: expected previous_root={prev_root}, got {prev}"
                 )
             prev_root = curr
 

@@ -80,12 +80,7 @@ def main():
         config = demo_dir / "config.json"
         users_csv = demo_dir / "users.csv"
 
-        report.write_text(
-            "Q1 2026 Financial Report\n"
-            "Revenue: $4.2M\n"
-            "Expenses: $2.8M\n"
-            "Net: $1.4M\n"
-        )
+        report.write_text("Q1 2026 Financial Report\nRevenue: $4.2M\nExpenses: $2.8M\nNet: $1.4M\n")
         config.write_text(
             '{"database": "prod-db-primary", "version": "2.1.0", "backup_enabled": true}'
         )
@@ -126,8 +121,10 @@ def main():
 
         print(f"  Before-state captured: {p1['before_state']['snapshot_ref']}")
         print(f"  Snapshot hash: {p1['before_state']['snapshot_hash'][:40]}...")
-        print(f"  Intent committed to log at sequence {p1['log_commitment']['sequence_number']}: "
-              f"{p1['intent']['intent_id']}")
+        print(
+            f"  Intent committed to log at sequence {p1['log_commitment']['sequence_number']}: "
+            f"{p1['intent']['intent_id']}"
+        )
         print("  ✓ Phase 1 is immutable  -  agent cannot change what it declared")
         print()
 
@@ -139,12 +136,16 @@ def main():
         print(f"  Outcome: {p2['execution']['outcome']}")
         print(f"  Outcome hash: {p2['execution']['outcome_hash'][:40]}...")
         print(f"  Provider signature: {p2['provider_attestation']['signature'][:32]}...")
-        print(f"  Receipt committed to log at sequence {p2['log_proof']['sequence_number']}: "
-              f"{receipt['receipt_id']}")
+        print(
+            f"  Receipt committed to log at sequence {p2['log_proof']['sequence_number']}: "
+            f"{receipt['receipt_id']}"
+        )
 
         if p2.get("inverse", {}).get("is_reversible"):
             inv = p2["inverse"]
-            print(f"  Inverse op: {inv['inverse_tool']}({inv['inverse_arguments']['snapshot_ref']})")
+            print(
+                f"  Inverse op: {inv['inverse_tool']}({inv['inverse_arguments']['snapshot_ref']})"
+            )
             print(f"  Valid until: {inv['valid_until']}")
         print()
 
@@ -171,15 +172,15 @@ def main():
         tampered_receipt["phase_2"]["execution"]["outcome_hash"] = fabricated_hash
 
         provider_id = p2["provider_attestation"]["provider_id"]
-        fab_check = verify_receipt(
-            tampered_receipt, {provider_id: provider_kp.public_key_hex}
-        )
+        fab_check = verify_receipt(tampered_receipt, {provider_id: provider_kp.public_key_hex})
         print(f"  verify_receipt() on tampered receipt: valid={fab_check['valid']}")
         print(f"  provider_signature_valid: {fab_check['checks']['provider_signature_valid']}")
         if fab_check["errors"]:
             print(f"  Error: {fab_check['errors'][0]}")
         print()
-        print("  ✓ ARC DETECTED FABRICATION  -  provider signature does not match fabricated result")
+        print(
+            "  ✓ ARC DETECTED FABRICATION  -  provider signature does not match fabricated result"
+        )
         print()
 
         # ─── Disaster Behavior 2: Log Tampering ──────────────────────
@@ -227,8 +228,10 @@ def main():
 
         # Verify the inverse signature
         real_check = verify_receipt(receipt, {provider_id: provider_kp.public_key_hex})
-        print(f"  inverse_signature verifies against provider public key: "
-              f"{'✓' if real_check['checks']['inverse_signature_valid'] else '✗'}")
+        print(
+            f"  inverse_signature verifies against provider public key: "
+            f"{'✓' if real_check['checks']['inverse_signature_valid'] else '✗'}"
+        )
         print()
         print("  ✓ ARC EXPOSES THE LIE  -  provider signed that rollback IS possible")
         print()
@@ -239,7 +242,9 @@ def main():
         print("--- ROLLBACK ---")
         hr()
         print()
-        print(f"  Executing: {inv['inverse_tool']}({inv['inverse_arguments']['snapshot_ref'][:20]}...)")
+        print(
+            f"  Executing: {inv['inverse_tool']}({inv['inverse_arguments']['snapshot_ref'][:20]}...)"
+        )
         print()
 
         snap = store.retrieve(receipt["phase_1"]["before_state"]["snapshot_ref"])

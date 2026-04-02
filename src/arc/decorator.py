@@ -66,7 +66,9 @@ def signed_tool(
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            ctx: ARCContext = kwargs.get("ctx") or (args[-1] if args and isinstance(args[-1], ARCContext) else None)
+            ctx: ARCContext = kwargs.get("ctx") or (
+                args[-1] if args and isinstance(args[-1], ARCContext) else None
+            )
             if ctx is None:
                 raise ValueError("ARCContext must be passed as 'ctx' keyword argument")
 
@@ -101,6 +103,7 @@ def signed_tool(
 
             # Store reasoning
             from arc.signing import sha256_hex
+
             reasoning_hash = sha256_hex(tool_reasoning.encode("utf-8"))
             ctx.reasoning_store[reasoning_hash] = tool_reasoning
 
@@ -164,7 +167,9 @@ def signed_tool(
 
         @wraps(func)
         async def async_wrapper(*args, **kwargs):
-            ctx: ARCContext = kwargs.get("ctx") or (args[-1] if args and isinstance(args[-1], ARCContext) else None)
+            ctx: ARCContext = kwargs.get("ctx") or (
+                args[-1] if args and isinstance(args[-1], ARCContext) else None
+            )
             if ctx is None:
                 raise ValueError("ARCContext must be passed as 'ctx' keyword argument")
 
@@ -262,6 +267,7 @@ def _extract_resource_uri(func, args, kwargs, resource_uri_from_args: str | None
 
     # Try positional args using function signature
     import inspect
+
     try:
         sig = inspect.signature(func)
         param_names = list(sig.parameters.keys())
@@ -277,6 +283,7 @@ def _extract_resource_uri(func, args, kwargs, resource_uri_from_args: str | None
 def _build_args_dict(func, args, kwargs) -> dict:
     """Build a dict of all arguments passed to the function (excluding ctx)."""
     import inspect
+
     result = {}
     try:
         sig = inspect.signature(func)
@@ -285,7 +292,11 @@ def _build_args_dict(func, args, kwargs) -> dict:
             if i < len(param_names):
                 name = param_names[i]
                 if name != "ctx" and not isinstance(arg, ARCContext):
-                    result[name] = str(arg) if not isinstance(arg, (str, int, float, bool, list, dict)) else arg
+                    result[name] = (
+                        str(arg)
+                        if not isinstance(arg, (str, int, float, bool, list, dict))
+                        else arg
+                    )
     except Exception:
         pass
 
@@ -296,7 +307,9 @@ def _build_args_dict(func, args, kwargs) -> dict:
     return result
 
 
-def _capture_before_state(resource: str, resource_uri: str | None, call_args: dict, store: SnapshotStore):
+def _capture_before_state(
+    resource: str, resource_uri: str | None, call_args: dict, store: SnapshotStore
+):
     """Capture before-state based on resource type."""
     if resource == "filesystem" and resource_uri:
         return capture_filesystem(resource_uri, store)

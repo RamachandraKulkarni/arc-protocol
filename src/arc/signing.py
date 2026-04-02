@@ -58,7 +58,7 @@ class ARCKeyPair:
         try:
             if not signature.startswith("ed25519:"):
                 return False
-            sig_bytes = base64.b64decode(signature[len("ed25519:"):])
+            sig_bytes = base64.b64decode(signature[len("ed25519:") :])
             self._public_key.verify(sig_bytes, payload)
             return True
         except (InvalidSignature, Exception):
@@ -74,11 +74,12 @@ def verify_with_public_key_hex(payload: bytes, signature: str, public_key_hex: s
     """Verify a signature using just a public key hex string (no private key needed)."""
     try:
         from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
         raw = bytes.fromhex(public_key_hex)
         pub_key = Ed25519PublicKey.from_public_bytes(raw)
         if not signature.startswith("ed25519:"):
             return False
-        sig_bytes = base64.b64decode(signature[len("ed25519:"):])
+        sig_bytes = base64.b64decode(signature[len("ed25519:") :])
         pub_key.verify(sig_bytes, payload)
         return True
     except (InvalidSignature, Exception):
@@ -94,7 +95,9 @@ def canonical_json(obj: dict) -> bytes:
     - UTF-8 encoding
     - None → JSON null
     """
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
+        "utf-8"
+    )
 
 
 def sha256_hex(data: bytes) -> str:
@@ -137,6 +140,8 @@ def build_signing_payload(
     canonical = canonical_json(payload_obj)
     payload_hash = sha256_hex(canonical)
     return payload_hash.encode("utf-8")
+
+
 def build_inverse_signing_payload(
     receipt_id: str,
     inverse_tool: str,

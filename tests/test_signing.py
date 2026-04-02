@@ -89,8 +89,9 @@ def test_signature_format():
     sig = kp.sign(b"test")
     # Format: ed25519: + base64(64 bytes) = ed25519: + 88 chars (with padding)
     assert sig.startswith("ed25519:")
-    b64_part = sig[len("ed25519:"):]
+    b64_part = sig[len("ed25519:") :]
     import base64
+
     decoded = base64.b64decode(b64_part)
     assert len(decoded) == 64  # Ed25519 signature is always 64 bytes
 

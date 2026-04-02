@@ -24,6 +24,7 @@ from arc.signing import sha256_hex
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _get_valid_receipt(ctx: ARCContext, temp_dir: str) -> dict:
     """Produce a normal, cryptographically valid receipt via @signed_tool."""
 
@@ -61,6 +62,7 @@ def _build_minimal_intent(tag: str = "x") -> dict:
 # ---------------------------------------------------------------------------
 # Surface 1  -  expanded signing payload
 # ---------------------------------------------------------------------------
+
 
 class TestExpandedSigningPayload:
     """
@@ -142,6 +144,7 @@ class TestExpandedSigningPayload:
 # Surface 2  -  emergent fix: is_reversible=False + inverse_signature present
 # ---------------------------------------------------------------------------
 
+
 class TestIsReversibleContradiction:
     """
     Emergent fix: if is_reversible=False but inverse_signature is still present,
@@ -151,9 +154,7 @@ class TestIsReversibleContradiction:
     provider's inverse_signature is still sitting in the receipt revealing the lie.
     """
 
-    def test_is_reversible_false_with_signature_present_is_flagged(
-        self, ctx, temp_dir, registry
-    ):
+    def test_is_reversible_false_with_signature_present_is_flagged(self, ctx, temp_dir, registry):
         """
         Start with a valid reversible receipt (is_reversible=True, inverse_signature present).
         Flip is_reversible=False but keep inverse_signature.
@@ -205,6 +206,7 @@ class TestIsReversibleContradiction:
 # ---------------------------------------------------------------------------
 # Surface 3  -  duplicate guard edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestDuplicateGuard:
     """
@@ -404,6 +406,7 @@ class TestDuplicateGuard:
 # Surface 4  -  timestamp ordering boundary
 # ---------------------------------------------------------------------------
 
+
 class TestTimestampOrdering:
     """
     verify_receipt() rejects declared_at > started_at (backdate attack).
@@ -437,9 +440,7 @@ class TestTimestampOrdering:
         # Full receipt should be valid
         assert result["valid"] is True
 
-    def test_declared_at_one_second_after_started_at_is_invalid(
-        self, ctx, temp_dir, registry
-    ):
+    def test_declared_at_one_second_after_started_at_is_invalid(self, ctx, temp_dir, registry):
         """
         Confirm that declared_at strictly after started_at is caught.
         (Regression guard for the timestamp ordering check itself.)
@@ -453,9 +454,7 @@ class TestTimestampOrdering:
         result = verify_receipt(tampered, registry)
 
         ts_check = result["checks"].get("timestamp_ordering")
-        assert ts_check is False, (
-            "declared_at after started_at must fail timestamp_ordering check"
-        )
+        assert ts_check is False, "declared_at after started_at must fail timestamp_ordering check"
         assert result["valid"] is False
         assert any("declared_at" in e or "timestamp" in e.lower() for e in result["errors"])
 
@@ -463,6 +462,7 @@ class TestTimestampOrdering:
 # ---------------------------------------------------------------------------
 # Surface 5  -  Merkle content_hash tamper at boundary (last entry)
 # ---------------------------------------------------------------------------
+
 
 class TestMerkleLastEntryTamper:
     """

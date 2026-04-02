@@ -36,7 +36,6 @@ def _build_inverse_payload(receipt_id: str, inverse: dict) -> bytes:
 
 
 class TestRollbackDenial:
-
     def _get_delete_receipt(self, ctx, temp_dir):
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def delete_directory(path: str, ctx: ARCContext) -> dict:
@@ -116,11 +115,10 @@ class TestRollbackDenial:
 
         # Verify: the inverse_signature does NOT match the tampered valid_until
         inverse_payload = _build_inverse_payload(receipt["receipt_id"], tampered_inverse)
-        assert ctx.provider_keypair.verify(
-            inverse_payload, tampered_inverse["inverse_signature"]
-        ) is False, (
-            "Tampered valid_until must invalidate the inverse_signature."
-        )
+        assert (
+            ctx.provider_keypair.verify(inverse_payload, tampered_inverse["inverse_signature"])
+            is False
+        ), "Tampered valid_until must invalidate the inverse_signature."
 
     def test_agent_cannot_forge_is_reversible_false(self, ctx, temp_dir, registry):
         """

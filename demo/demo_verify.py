@@ -44,6 +44,7 @@ def main():
     # Check server health
     try:
         import httpx
+
         with httpx.Client(timeout=5.0) as c:
             resp = c.get(f"{base_url}/health")
             if resp.status_code != 200:

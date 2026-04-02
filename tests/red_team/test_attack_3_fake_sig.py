@@ -20,7 +20,6 @@ from arc.signing import build_signing_payload
 
 
 class TestFakeSignature:
-
     def _get_valid_receipt(self, ctx, temp_dir):
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def list_files(path: str, ctx: ARCContext) -> dict:
@@ -117,10 +116,9 @@ class TestFakeSignature:
         result = verify_receipt(receipt, revoked_registry)
 
         assert result["valid"] is False
-        assert any(
-            "provider" in e.lower() or "not found" in e.lower()
-            for e in result["errors"]
-        ), f"Expected 'provider not found' error, got: {result['errors']}"
+        assert any("provider" in e.lower() or "not found" in e.lower() for e in result["errors"]), (
+            f"Expected 'provider not found' error, got: {result['errors']}"
+        )
 
     def test_valid_signature_but_with_extra_fields_in_payload(self, ctx, temp_dir, registry):
         """

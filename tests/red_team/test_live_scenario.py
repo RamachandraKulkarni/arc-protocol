@@ -58,9 +58,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     print("\n[SETUP] Creating production-like data directory...")
     data_dir = tmp_path / "production_data"
     data_dir.mkdir()
-    (data_dir / "users.csv").write_text(
-        "id,name,email\n1,Alice,alice@co.com\n2,Bob,bob@co.com"
-    )
+    (data_dir / "users.csv").write_text("id,name,email\n1,Alice,alice@co.com\n2,Bob,bob@co.com")
     (data_dir / "config.json").write_text('{"db": "prod", "key": "secret123"}')
     (data_dir / "report.txt").write_text("Q4 2025 financial summary: $4.2M revenue")
 
@@ -153,6 +151,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
 
     assert not consistency["is_consistent"], "Log tampering must be detected"
     import re
+
     broken_seqs = [
         int(m.group(1))
         for e in consistency["errors"]

@@ -24,7 +24,6 @@ from arc.signing import sha256_hex
 
 
 class TestBackdatedIntent:
-
     def _get_valid_receipt(self, ctx, temp_dir):
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
         def list_files(path: str, ctx: ARCContext) -> dict:
@@ -175,12 +174,10 @@ class TestBackdatedIntent:
 
         assert result["valid"] is False
         assert result["checks"]["sequence_numbers_monotonic"] is False
-        assert any(
-            "sequence" in e.lower() or "monoton" in e.lower()
-            for e in result["errors"]
-        ) or not result["checks"]["sequence_numbers_monotonic"], (
-            f"Expected error about sequence ordering, got: {result['errors']}"
-        )
+        assert (
+            any("sequence" in e.lower() or "monoton" in e.lower() for e in result["errors"])
+            or not result["checks"]["sequence_numbers_monotonic"]
+        ), f"Expected error about sequence ordering, got: {result['errors']}"
 
     def test_valid_phase1_before_phase2_passes(self, ctx, temp_dir, registry):
         """

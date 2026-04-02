@@ -23,6 +23,7 @@ __version__ = "1.1.2"
 def __getattr__(name: str):
     if name == "ARCLogClient":
         from arc.log_client import ARCLogClient
+
         return ARCLogClient
     raise AttributeError(f"module 'arc' has no attribute {name!r}")
 
