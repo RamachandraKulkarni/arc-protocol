@@ -1,5 +1,5 @@
 """
-@signed_tool decorator and ARCContext — the primary user-facing API.
+@signed_tool decorator and ARCContext  -  the primary user-facing API.
 Wraps any function with full ARC two-phase receipt protocol.
 """
 
@@ -49,7 +49,7 @@ def signed_tool(
     Decorator that wraps a function with full ARC protocol execution.
 
     Parameters:
-        resource: resource type — "filesystem", "dict", "api", "custom"
+        resource: resource type  -  "filesystem", "dict", "api", "custom"
         resource_uri_from_args: name of the kwarg/arg that contains the resource path/URI
         rollback_valid_minutes: how long the inverse op is valid
         capture_args: which args to include in snapshot context
@@ -57,7 +57,7 @@ def signed_tool(
 
     The decorator:
     1. Captures before-state from the resource
-    2. Calls declare_intent (Phase 1) — committed to log
+    2. Calls declare_intent (Phase 1)  -  committed to log
     3. Calls the wrapped function
     4. Signs and commits Phase 2 (attestation)
     5. Returns the complete ActionReceipt dict

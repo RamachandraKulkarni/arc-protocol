@@ -110,7 +110,7 @@ class ReceiptBuilder:
             "is_reversible": snapshot.is_reversible,
         }
 
-        # Commit intent to log — returns LogCommitment
+        # Commit intent to log  -  returns LogCommitment
         log_commitment = self.log.commit_intent(intent, receipt_id)
 
         phase_1 = {
@@ -326,7 +326,7 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
         is_reversible_flag = inverse.get("is_reversible", False) if inverse else False
 
         if inverse and inv_sig and is_reversible_flag:
-            # Case 1: normal reversible receipt — verify the inverse signature
+            # Case 1: normal reversible receipt  -  verify the inverse signature
             receipt_id = receipt.get("receipt_id", "")
             inv_payload_obj = {
                 "inverse_arguments": inverse.get("inverse_arguments", {}),
@@ -350,16 +350,16 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
             else:
                 checks["inverse_signature_valid"] = None
         elif inverse and inv_sig and not is_reversible_flag:
-            # Case 2: is_reversible=False but inverse_signature is still present —
+            # Case 2: is_reversible=False but inverse_signature is still present  - 
             # structurally inconsistent. Provider signed a reversible inverse op, but
             # the receipt claims non-reversible. This is a tampered receipt.
             checks["inverse_signature_valid"] = False
             errors.append(
                 "Inverse signature present but is_reversible=False: "
-                "structural inconsistency — possible rollback denial tampering."
+                "structural inconsistency  -  possible rollback denial tampering."
             )
         else:
-            # Case 3: no inverse_signature — not applicable
+            # Case 3: no inverse_signature  -  not applicable
             checks["inverse_signature_valid"] = None
     except Exception as e:
         errors.append(f"Inverse signature check error: {e}")
@@ -374,7 +374,7 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
                 errors.append(
                     f"Sequence ordering violated: Phase 1 sequence ({phase1_seq}) "
                     f">= Phase 2 sequence ({phase2_seq}). "
-                    "Phase 1 was committed after Phase 2 — backdating detected."
+                    "Phase 1 was committed after Phase 2  -  backdating detected."
                 )
         else:
             checks["sequence_numbers_monotonic"] = False

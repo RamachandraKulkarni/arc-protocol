@@ -24,7 +24,7 @@ from arc.snapshot import SnapshotStore, capture_filesystem
 class TestEdgeCases:
 
     def test_empty_arguments_dict(self, ctx, tmp_path):
-        """Tool called with no arguments beyond ctx — receipt still generated."""
+        """Tool called with no arguments beyond ctx  -  receipt still generated."""
         @signed_tool(resource="dict")
         def noop(ctx: ARCContext) -> dict:
             return {"done": True}
@@ -35,7 +35,7 @@ class TestEdgeCases:
         assert receipt["phase_2"]["execution"]["outcome"] == "success"
 
     def test_very_large_arguments(self, ctx, tmp_path):
-        """Arguments with 1MB of data — receipt generation completes without error."""
+        """Arguments with 1MB of data  -  receipt generation completes without error."""
         large_data = "x" * (1024 * 1024)
 
         @signed_tool(resource="dict", resource_uri_from_args="key")
@@ -66,7 +66,7 @@ class TestEdgeCases:
 
     def test_deeply_nested_arguments(self, ctx, tmp_path):
         """
-        Arguments nested 10 levels deep — hashing and serialization correct.
+        Arguments nested 10 levels deep  -  hashing and serialization correct.
         """
         nested = {"level": 0}
         current = nested
@@ -82,7 +82,7 @@ class TestEdgeCases:
         assert receipt["phase_2"]["execution"]["outcome"] == "success"
 
     def test_receipt_id_uniqueness_across_100_calls(self, ctx, tmp_path):
-        """Generate 100 receipts rapidly — all receipt_ids must be globally unique."""
+        """Generate 100 receipts rapidly  -  all receipt_ids must be globally unique."""
         @signed_tool(resource="dict")
         def quick_noop(ctx: ARCContext) -> dict:
             return {"ok": True}
@@ -95,7 +95,7 @@ class TestEdgeCases:
 
     def test_concurrent_tool_calls(self, tmp_path):
         """
-        Two @signed_tool calls running concurrently — both receipts valid, no ID collision.
+        Two @signed_tool calls running concurrently  -  both receipts valid, no ID collision.
         Thread safety of the Merkle tree and log must hold.
         """
         kp = ARCKeyPair.generate()
@@ -145,7 +145,7 @@ class TestEdgeCases:
     def test_tool_raises_exception_still_generates_receipt(self, ctx, tmp_path):
         """
         When the tool raises, outcome=failure and receipt is still committed.
-        Failed actions must be logged — this is a core protocol guarantee.
+        Failed actions must be logged  -  this is a core protocol guarantee.
         """
         @signed_tool(resource="dict")
         def always_fails(ctx: ARCContext) -> dict:
@@ -160,7 +160,7 @@ class TestEdgeCases:
 
     def test_snapshot_of_empty_directory(self, ctx, tmp_path):
         """
-        Snapshot of an empty directory — valid snapshot, rollback recreates empty dir.
+        Snapshot of an empty directory  -  valid snapshot, rollback recreates empty dir.
         """
         empty_dir = tmp_path / "empty"
         empty_dir.mkdir()
@@ -182,7 +182,7 @@ class TestEdgeCases:
 
     def test_verify_receipt_with_empty_registry(self, ctx, tmp_path):
         """
-        verify_receipt() with empty registry — must fail with specific error,
+        verify_receipt() with empty registry  -  must fail with specific error,
         not crash with an unhandled exception.
         """
         @signed_tool(resource="dict")
@@ -202,7 +202,7 @@ class TestEdgeCases:
 
     def test_verify_receipt_with_none_registry_value(self, ctx, tmp_path, registry):
         """
-        verify_receipt() handles a registry where the key maps to None — must fail
+        verify_receipt() handles a registry where the key maps to None  -  must fail
         gracefully, not raise AttributeError or TypeError.
         """
         @signed_tool(resource="dict")
@@ -211,7 +211,7 @@ class TestEdgeCases:
 
         receipt = noop(ctx=ctx)
         broken_registry = {"filesystem-tool-v1": None}
-        # This should not raise — it should return valid=False
+        # This should not raise  -  it should return valid=False
         try:
             result = verify_receipt(receipt, broken_registry)
             assert result["valid"] is False

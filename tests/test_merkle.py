@@ -77,7 +77,7 @@ def test_leaf_hash_uses_domain_separation():
     data = b"test"
     lh = leaf_hash(data)
     assert lh.startswith("sha256:")
-    # Leaf hash uses 0x00 prefix — different from plain SHA-256
+    # Leaf hash uses 0x00 prefix  -  different from plain SHA-256
     import hashlib
     plain = "sha256:" + hashlib.sha256(data).hexdigest()
     assert lh != plain

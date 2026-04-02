@@ -26,11 +26,11 @@ python demo/demo_disaster.py
 ```
 
 Shows:
-1. Agent deletes directory — before-state captured in log first
-2. Agent fabricates result — detected via outcome_hash mismatch
-3. Agent tampers with log — detected via Merkle chain break
-4. Agent claims rollback impossible — refuted by signed inverse op
-5. Actual rollback from snapshot — files restored
+1. Agent deletes directory  -  before-state captured in log first
+2. Agent fabricates result  -  detected via outcome_hash mismatch
+3. Agent tampers with log  -  detected via Merkle chain break
+4. Agent claims rollback impossible  -  refuted by signed inverse op
+5. Actual rollback from snapshot  -  files restored
 
 ### Demo 3: Third-party verification (requires log server)
 Verify a receipt from the public log without any private keys.

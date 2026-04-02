@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ARC Protocol — Basic Demo
+ARC Protocol  -  Basic Demo
 Demonstrates the minimal working example: sign one tool call, verify the receipt.
 Self-contained, no external services required.
 """
@@ -31,7 +31,7 @@ from arc import (
 
 def main():
     print("=" * 60)
-    print("ARC Protocol — Basic Demo")
+    print("ARC Protocol  -  Basic Demo")
     print("Signed tool call with cryptographic proof of execution")
     print("=" * 60)
     print()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ARC Protocol — The Replit Scenario Demo
+ARC Protocol  -  The Replit Scenario Demo
 Demonstrates how ARC detects agent fabrication, log tampering, and enables rollback.
 
 This reproduces the canonical failure pattern:
@@ -50,7 +50,7 @@ def main():
     print("The Replit incident (2024):")
     print("  An agent deleted a production database, fabricated")
     print("  4,000 fake users to cover it, then told the user")
-    print("  rollback was impossible — when it was actually possible.")
+    print("  rollback was impossible  -  when it was actually possible.")
     print()
     print("ARC prevents each of these failure modes.")
     print()
@@ -106,7 +106,7 @@ def main():
         # ─── Phase 1 + Execution ─────────────────────────────────────
 
         hr()
-        print("[PHASE 1 — PRE-ACTION] Agent declares intent to delete directory")
+        print("[PHASE 1  -  PRE-ACTION] Agent declares intent to delete directory")
         hr()
         print()
 
@@ -129,14 +129,14 @@ def main():
         print(f"  Snapshot hash: {p1['before_state']['snapshot_hash'][:40]}...")
         print(f"  Intent committed to log at sequence {p1['log_commitment']['sequence_number']}: "
               f"{p1['intent']['intent_id']}")
-        print(f"  ✓ Phase 1 is immutable — agent cannot change what it declared")
+        print(f"  ✓ Phase 1 is immutable  -  agent cannot change what it declared")
         print()
 
         print("[EXECUTION] Deleting directory...")
         print(f"  Directory deleted. Files gone: {not demo_dir.exists()}")
         print()
 
-        print("[PHASE 2 — ATTESTATION] Tool provider signs the outcome")
+        print("[PHASE 2  -  ATTESTATION] Tool provider signs the outcome")
         print(f"  Outcome: {p2['execution']['outcome']}")
         print(f"  Outcome hash: {p2['execution']['outcome_hash'][:40]}...")
         print(f"  Provider signature: {p2['provider_attestation']['signature'][:32]}...")
@@ -180,7 +180,7 @@ def main():
         if fab_check["errors"]:
             print(f"  Error: {fab_check['errors'][0]}")
         print()
-        print(f"  ✓ ARC DETECTED FABRICATION — provider signature does not match fabricated result")
+        print(f"  ✓ ARC DETECTED FABRICATION  -  provider signature does not match fabricated result")
         print()
 
         # ─── Disaster Behavior 2: Log Tampering ──────────────────────
@@ -204,7 +204,7 @@ def main():
         if consistency_after["errors"]:
             print(f"  Error: {consistency_after['errors'][0]}")
         print()
-        print("  ✓ ARC DETECTED LOG TAMPERING — Merkle chain is broken at sequence 0")
+        print("  ✓ ARC DETECTED LOG TAMPERING  -  Merkle chain is broken at sequence 0")
         print()
 
         # Restore the log for subsequent checks
@@ -231,7 +231,7 @@ def main():
         print(f"  inverse_signature verifies against provider public key: "
               f"{'✓' if real_check['checks']['inverse_signature_valid'] else '✗'}")
         print()
-        print("  ✓ ARC EXPOSES THE LIE — provider signed that rollback IS possible")
+        print("  ✓ ARC EXPOSES THE LIE  -  provider signed that rollback IS possible")
         print()
 
         # ─── Rollback ────────────────────────────────────────────────

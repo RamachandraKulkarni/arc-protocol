@@ -1,9 +1,9 @@
 """
 ATTACK 4: Rollback Denial
 An agent claims "rollback is not available" when the receipt proves otherwise.
-This is what the Replit agent did — it told the user the deletion was irreversible.
+This is what the Replit agent did  -  it told the user the deletion was irreversible.
 
-WHAT ARC MUST DEMONSTRATE (not detect — refute):
+WHAT ARC MUST DEMONSTRATE (not detect  -  refute):
 - The receipt contains inverse.is_reversible=True
 - The inverse_signature proves the provider committed to this rollback
 - Actual rollback execution succeeds and restores original state
@@ -106,7 +106,7 @@ class TestRollbackDenial:
     def test_inverse_op_window_expiry_detected(self, ctx, temp_dir):
         """
         If valid_until is tampered to a past date, the inverse_signature no longer
-        verifies — the provider did not sign that timestamp.
+        verifies  -  the provider did not sign that timestamp.
         This prevents backdating the rollback window.
         """
         receipt = self._get_delete_receipt(ctx, temp_dir)
@@ -131,7 +131,7 @@ class TestRollbackDenial:
         skip the inverse operation check entirely.
 
         EXPECTED: verify_receipt() returns valid=False (inverse op in signing payload).
-        ACTUAL: verify_receipt() returns valid=True — the inverse operation fields are
+        ACTUAL: verify_receipt() returns valid=True  -  the inverse operation fields are
                 NOT included in the provider_signature payload. The check for
                 inverse_signature_valid is skipped when is_reversible=False,
                 and None is treated as "valid".
@@ -146,7 +146,7 @@ class TestRollbackDenial:
 
         result = verify_receipt(tampered, registry)
 
-        # This assertion WILL FAIL — exposing the hole:
+        # This assertion WILL FAIL  -  exposing the hole:
         # The provider_signature does not cover is_reversible. Setting it to False
         # makes verify_receipt() skip the inverse_signature_valid check (returns None),
         # and since None is not False, valid=True is returned.

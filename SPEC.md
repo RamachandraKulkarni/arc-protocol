@@ -4,13 +4,13 @@
 
 ARC (Agent Receipt & Certification) is a cryptographic protocol for AI agent tool calls. It solves three interconnected problems:
 
-1. **Proof of execution** — AI agents self-report their actions with no independent verification. ARC introduces a *tool-provider-signed* receipt that proves execution occurred and what the outcome actually was.
+1. **Proof of execution**  -  AI agents self-report their actions with no independent verification. ARC introduces a *tool-provider-signed* receipt that proves execution occurred and what the outcome actually was.
 
-2. **Observability** — No standard schema exists for tamper-evident agent reasoning traces. ARC defines a two-phase structured receipt committed to an append-only Merkle transparency log.
+2. **Observability**  -  No standard schema exists for tamper-evident agent reasoning traces. ARC defines a two-phase structured receipt committed to an append-only Merkle transparency log.
 
-3. **Reversibility** — No protocol exists for undoing agent actions. ARC captures before-state in a cryptographic snapshot and has the provider sign an inverse operation specification.
+3. **Reversibility**  -  No protocol exists for undoing agent actions. ARC captures before-state in a cryptographic snapshot and has the provider sign an inverse operation specification.
 
-The core insight: these three problems are the same problem at three phases of execution. The solution is a single primitive — the **Action Receipt** — a two-phase, cryptographically signed record.
+The core insight: these three problems are the same problem at three phases of execution. The solution is a single primitive  -  the **Action Receipt**  -  a two-phase, cryptographically signed record.
 
 ---
 
@@ -381,13 +381,13 @@ Article 12 (Transparency through logging) requires:
 |---|---|
 | Logging shall be automatic | `@signed_tool` decorator; zero agent cooperation required |
 | Tamper-evident records | RFC 6962 Merkle tree; `previous_root` chains all entries |
-| Log what system did | `phase_2.execution.outcome_hash` — SHA-256 of actual tool output |
-| Log state before action | `phase_1.before_state.snapshot_hash` — before-state hash |
+| Log what system did | `phase_2.execution.outcome_hash`  -  SHA-256 of actual tool output |
+| Log state before action | `phase_1.before_state.snapshot_hash`  -  before-state hash |
 | Timestamps | `declared_at`, `started_at`, `completed_at`, log `timestamp` |
 | System identification | `declared_by.agent_id`, `declared_by.model_version` |
 | Operator identification | `on_behalf_of`, `authorization.granted_by` |
 | 6-month retention capable | SQLite log server with configurable retention |
-| Accessible to authorities | `GET /v1/log/verify/{receipt_id}` — public read endpoint |
+| Accessible to authorities | `GET /v1/log/verify/{receipt_id}`  -  public read endpoint |
 | Enable supervisory access | Merkle root published at `GET /v1/log/root` |
 
 Fines for non-compliance: up to €35M or 7% of global annual revenue. Enforcement begins **August 2, 2026**.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-arc_shell.py — ARC Protocol Shell Wrapper
+arc_shell.py  -  ARC Protocol Shell Wrapper
 
 Wraps any shell command with full ARC proof-of-execution protocol.
 Used by Claude Code, Codex, or any AI agent to make their tool calls verifiable.
@@ -154,7 +154,7 @@ def detect_resource_type(path: str) -> str:
     elif p.is_file():
         return "filesystem:file"
     else:
-        # Doesn't exist yet — will be created
+        # Doesn't exist yet  -  will be created
         return "filesystem:file"
 
 
@@ -182,7 +182,7 @@ def capture_before_states(paths: list[str], store: SnapshotStore) -> list[dict]:
         if Path(path).exists():
             snap = capture_filesystem(path, store)
         else:
-            # File doesn't exist yet — create a "null" snapshot
+            # File doesn't exist yet  -  create a "null" snapshot
             snap = Snapshot(
                 snapshot_ref=new_snapshot_id(),
                 resource_uri=f"file://{path}",

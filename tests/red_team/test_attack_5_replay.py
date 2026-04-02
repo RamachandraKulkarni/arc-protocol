@@ -1,6 +1,6 @@
 """
 ATTACK 5: Replay Attack
-An agent submits a previously valid receipt as if it represents a new action —
+An agent submits a previously valid receipt as if it represents a new action  - 
 to reuse a valid proof for a different context, or claim credit for work not re-done.
 
 WHAT ARC MUST DETECT:
@@ -11,7 +11,7 @@ WHAT ARC MUST DETECT:
 HOLES FOUND (see RED_TEAM_FINDINGS.md):
 - The in-memory log does NOT reject duplicate receipt submissions. Committing the
   same receipt twice succeeds silently (Hole 4).
-- verify_receipt() has no freshness check — a receipt from the past is considered
+- verify_receipt() has no freshness check  -  a receipt from the past is considered
   valid indefinitely (Hole 5).
 """
 
@@ -45,7 +45,7 @@ class TestReplayAttack:
 
         EXPECTED: Second commit_receipt() raises ARCLogError with 'duplicate' or
                   'already committed' message.
-        ACTUAL: Second commit_receipt() succeeds silently — no duplicate detection.
+        ACTUAL: Second commit_receipt() succeeds silently  -  no duplicate detection.
 
         THIS TEST EXPOSES A HOLE. See RED_TEAM_FINDINGS.md: Hole 4.
         """
@@ -55,12 +55,12 @@ class TestReplayAttack:
         # Attempt to commit the same receipt again:
         try:
             ctx.log.commit_receipt(receipt)
-            # If we reach here, the log accepted the duplicate — that's the hole
+            # If we reach here, the log accepted the duplicate  -  that's the hole
             duplicate_accepted = True
         except ARCLogError:
             duplicate_accepted = False
 
-        # This assertion WILL FAIL — exposing the hole:
+        # This assertion WILL FAIL  -  exposing the hole:
         assert not duplicate_accepted, (
             "HOLE 4: The transparency log does not check for duplicate receipt_id on "
             "commit_receipt(). The same receipt can be submitted multiple times without "
@@ -92,7 +92,7 @@ class TestReplayAttack:
         can detect that the sequence numbers are inconsistent with claimed timing.
 
         This tests that sequence monotonicity is maintained and is a PARTIAL defense
-        against replay — sequence numbers are always increasing.
+        against replay  -  sequence numbers are always increasing.
         """
         file_path = str(Path(temp_dir) / "file1.txt")
 

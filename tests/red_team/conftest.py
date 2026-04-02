@@ -53,8 +53,8 @@ def temp_dir(tmp_path):
     """A temp directory with known test files."""
     d = tmp_path / "test_data"
     d.mkdir()
-    (d / "file1.txt").write_text("file one content — important data")
-    (d / "file2.txt").write_text("file two content — also important")
+    (d / "file1.txt").write_text("file one content  -  important data")
+    (d / "file2.txt").write_text("file two content  -  also important")
     (d / "config.json").write_text('{"setting": "production_value"}')
     (d / "subdir").mkdir()
     (d / "subdir" / "nested.txt").write_text("nested file content")

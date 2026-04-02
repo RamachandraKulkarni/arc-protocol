@@ -1,4 +1,4 @@
-# ARC Protocol — Red Team Findings
+# ARC Protocol  -  Red Team Findings
 
 **Tested by:** Adversarial test suite (`tests/red_team/`)
 **Date:** 2026-04-02
@@ -93,7 +93,7 @@ passes all checks.
 **What should happen:**
 `verify_receipt()` should detect that `is_reversible` was changed and return `valid=False`.
 
-**Fix (Option A — preferred):**
+**Fix (Option A  -  preferred):**
 Include `is_reversible` in the provider signing payload alongside the other execution fields.
 
 **Fix (Option B):**
@@ -187,7 +187,7 @@ def commit_receipt(self, receipt_dict: dict) -> dict:
 
 **Attack:**
 Agent sets `declared_at` (Phase 1 intent timestamp) to a time **after**
-`execution.started_at` (Phase 2). This is logically impossible — you cannot declare intent
+`execution.started_at` (Phase 2). This is logically impossible  -  you cannot declare intent
 after you have already acted.
 
 **Why it works:**
@@ -249,7 +249,7 @@ without checking whether a receipt entry already exists for the same `receipt_id
 **Effect:**
 The log accepts the backdated intent. An attacker can manufacture a pre-action audit trail
 after the fact. The `verify()` check for a given `receipt_id` would show both entries
-as `intent_committed=True` and `receipt_committed=True` — appearing legitimate.
+as `intent_committed=True` and `receipt_committed=True`  -  appearing legitimate.
 
 **What should happen:**
 `commit_intent()` must raise `ARCLogError` if a receipt entry already exists for

@@ -56,13 +56,13 @@ class TestBackdatedIntent:
 
         EXPECTED: The second commit of intent raises ARCLogError because a receipt
                   already exists for this receipt_id.
-        ACTUAL: The log accepts both commits regardless of ordering — no ordering check.
+        ACTUAL: The log accepts both commits regardless of ordering  -  no ordering check.
 
         THIS TEST EXPOSES A HOLE. See RED_TEAM_FINDINGS.md: Hole 6.
         """
         receipt_id = new_receipt_id()
 
-        # Build a minimal fake receipt (simplified — doesn't need to pass schema)
+        # Build a minimal fake receipt (simplified  -  doesn't need to pass schema)
         fake_receipt = {
             "arc_version": "1.0",
             "receipt_id": receipt_id,
@@ -117,7 +117,7 @@ class TestBackdatedIntent:
         except ARCLogError:
             orphan_accepted = False
 
-        # This assertion WILL FAIL — exposing the hole:
+        # This assertion WILL FAIL  -  exposing the hole:
         assert not orphan_accepted, (
             "HOLE 6: The transparency log does not enforce Phase 1 before Phase 2 ordering "
             "per receipt_id. An agent can commit a receipt (Phase 2) first, then commit a "
@@ -128,7 +128,7 @@ class TestBackdatedIntent:
     def test_declared_at_after_execution_flagged(self, ctx, temp_dir, registry):
         """
         The intent's declared_at timestamp is AFTER the execution's started_at.
-        This is logically impossible — intent must precede action.
+        This is logically impossible  -  intent must precede action.
 
         EXPECTED: verify_receipt() returns valid=False naming timestamp ordering.
         ACTUAL: verify_receipt() does not check timestamp ordering at all.
@@ -143,7 +143,7 @@ class TestBackdatedIntent:
 
         result = verify_receipt(tampered, registry)
 
-        # This assertion WILL FAIL — exposing the hole:
+        # This assertion WILL FAIL  -  exposing the hole:
         assert result["valid"] is False, (
             "HOLE 5: verify_receipt() does not check timestamp ordering. Setting "
             "declared_at to a time after execution does not fail verification. "
@@ -158,7 +158,7 @@ class TestBackdatedIntent:
     def test_phase1_sequence_after_phase2_sequence_flagged(self, ctx, temp_dir, registry):
         """
         The log_commitment.sequence_number in Phase 1 is HIGHER than Phase 2's.
-        This proves Phase 1 was added to the log AFTER Phase 2 — unambiguous backdating.
+        This proves Phase 1 was added to the log AFTER Phase 2  -  unambiguous backdating.
 
         ARC DETECTS THIS: verify_receipt() checks phase2_seq > phase1_seq.
         This is one of the checks that WORKS correctly.

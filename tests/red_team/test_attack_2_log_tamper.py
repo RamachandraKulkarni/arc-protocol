@@ -88,7 +88,7 @@ class TestLogTampering:
 
     def test_content_hash_modification_not_detected_by_chain_check(self, populated_log):
         """
-        Attacker modifies content_hash of entry 3 — changing what was ostensibly logged —
+        Attacker modifies content_hash of entry 3  -  changing what was ostensibly logged  - 
         WITHOUT updating the merkle_root.
 
         EXPECTED: verify_consistency() detects this.
@@ -102,7 +102,7 @@ class TestLogTampering:
 
         consistency = populated_log.verify_consistency()
 
-        # This assertion WILL FAIL — exposing the hole:
+        # This assertion WILL FAIL  -  exposing the hole:
         assert consistency["is_consistent"] is False, (
             "HOLE 3: verify_consistency() does not recompute Merkle trees from content_hash "
             "values. An attacker can change what was committed (content_hash) without breaking "

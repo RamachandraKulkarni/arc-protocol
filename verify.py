@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-verify.py — ARC Cross-Agent Third-Party Verifier
+verify.py  -  ARC Cross-Agent Third-Party Verifier
 
 Verifies ARC receipts from the public transparency log.
 Has ZERO knowledge of the agent sessions that produced them.
@@ -12,7 +12,7 @@ Usage:
     python verify.py --all   (reads all *.log files in current dir)
 
 Does NOT import from arc-protocol source. Uses only stdlib + httpx for HTTP.
-This proves the verification is truly third-party — no shared code with the agents.
+This proves the verification is truly third-party  -  no shared code with the agents.
 
 Output:
     Prints a human-readable proof report.
@@ -68,7 +68,7 @@ try:
     CRYPTO_AVAILABLE = True
 except ImportError:
     def verify_ed25519(public_key_hex: str, payload: bytes, signature_str: str) -> bool:
-        print("  ⚠ cryptography library not available — signature verification skipped")
+        print("  ⚠ cryptography library not available  -  signature verification skipped")
         return None  # None = "not checked"
     CRYPTO_AVAILABLE = False
 
@@ -199,7 +199,7 @@ def verify_receipt_from_log(receipt_id: str, entry_meta: dict = None) -> dict:
     # Step 2: Check log chain consistency
     result["checks"]["log_chain_consistent"] = result["log_chain_consistent"]
     if not result["log_chain_consistent"]:
-        result["errors"].append("Log chain is inconsistent — possible tampering")
+        result["errors"].append("Log chain is inconsistent  -  possible tampering")
 
     # Step 3: Fetch the full receipt
     try:
@@ -220,7 +220,7 @@ def verify_receipt_from_log(receipt_id: str, entry_meta: dict = None) -> dict:
         attestation = p2["provider_attestation"]
         inverse = p2.get("inverse", {})
     except KeyError as e:
-        result["errors"].append(f"Malformed receipt — missing field: {e}")
+        result["errors"].append(f"Malformed receipt  -  missing field: {e}")
         return result
 
     # Step 5: Timestamp ordering check
@@ -266,11 +266,11 @@ def verify_receipt_from_log(receipt_id: str, entry_meta: dict = None) -> dict:
         sig_valid = verify_ed25519(provider_key_hex, payload, attestation["signature"])
         result["checks"]["provider_signature"] = sig_valid
         if sig_valid is False:
-            result["errors"].append("Provider signature INVALID — receipt may be tampered")
+            result["errors"].append("Provider signature INVALID  -  receipt may be tampered")
         elif sig_valid is None:
             result["warnings"].append("Provider signature not checked (cryptography library missing)")
     else:
-        result["warnings"].append("Provider public key not available — signature not verified")
+        result["warnings"].append("Provider public key not available  -  signature not verified")
         result["checks"]["provider_signature"] = None
 
     # Step 8: Inverse operation check
@@ -377,7 +377,7 @@ def print_receipt_report(result: dict, index: int, total: int) -> str:
     if result.get("rollback_available") is True:
         lines.append(f"\n  ↩  Rollback available until: {result.get('rollback_until')}")
     elif result.get("rollback_available") is False:
-        lines.append(f"\n  —  Rollback not available")
+        lines.append(f"\n   -   Rollback not available")
 
     if result.get("errors"):
         lines.append(f"\n  Errors:")
@@ -440,7 +440,7 @@ def main():
     # Header
     report_lines = []
     report_lines.append("=" * 62)
-    report_lines.append("ARC PROTOCOL — THIRD-PARTY VERIFICATION REPORT")
+    report_lines.append("ARC PROTOCOL  -  THIRD-PARTY VERIFICATION REPORT")
     report_lines.append(f"Verified at: {datetime.now(timezone.utc).isoformat()}")
     report_lines.append(f"Log server:  {LOG_URL}")
     report_lines.append(f"Receipts:    {len(all_entries)}")
@@ -494,7 +494,7 @@ def main():
     rollback_count = sum(1 for r in results if r.get("rollback_available"))
     summary_lines.append(f"\n  Actions with rollback available: {rollback_count}/{len(results)}")
 
-    overall = "✓ ALL RECEIPTS VALID — CROSS-AGENT PROOF COMPLETE" if invalid_count == 0 \
+    overall = "✓ ALL RECEIPTS VALID  -  CROSS-AGENT PROOF COMPLETE" if invalid_count == 0 \
         else f"✗ {invalid_count} RECEIPT(S) FAILED VERIFICATION"
     summary_lines.append(f"\n  OVERALL: {overall}")
     summary_lines.append(f"{'=' * 62}")

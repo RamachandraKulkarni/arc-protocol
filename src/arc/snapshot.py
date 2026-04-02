@@ -154,7 +154,7 @@ def capture_filesystem(path: str | Path, store: SnapshotStore) -> Snapshot:
         resource_type = "filesystem:directory"
         resource_uri = f"file://{p}"
     else:
-        # Path doesn't exist yet — record absence
+        # Path doesn't exist yet  -  record absence
         content = {"type": "absent", "path": str(p)}
         resource_type = "filesystem:file"
         resource_uri = f"file://{p}"
@@ -255,7 +255,7 @@ def rollback_filesystem(snap: Snapshot) -> bool:
             return True
 
         elif snap_type == "absent":
-            # Resource didn't exist before — nothing to restore
+            # Resource didn't exist before  -  nothing to restore
             path = Path(content["path"])
             if path.exists():
                 if path.is_file():

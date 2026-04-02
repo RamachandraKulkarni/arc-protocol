@@ -31,7 +31,7 @@ class TestResultFabrication:
     def test_replaced_outcome_hash_fails_verification(self, ctx, temp_dir, registry):
         """
         Baseline: agent claims it deleted 0 files when it deleted 3.
-        Most basic form of fabrication — changes outcome_hash to hash of fake result.
+        Most basic form of fabrication  -  changes outcome_hash to hash of fake result.
         The provider_signature was computed over the real outcome_hash, so it fails.
         """
         @signed_tool(resource="filesystem", resource_uri_from_args="path")
@@ -110,7 +110,7 @@ class TestResultFabrication:
         Agent calls a tool that errors. Agent reports outcome="success" instead of "failure".
 
         EXPECTED: verify_receipt() returns valid=False because outcome is tampered.
-        ACTUAL: verify_receipt() returns valid=True — the `outcome` field is NOT in
+        ACTUAL: verify_receipt() returns valid=True  -  the `outcome` field is NOT in
                 the signing payload, so changing it does not break the signature.
 
         THIS TEST EXPOSES A HOLE. See RED_TEAM_FINDINGS.md: Hole 1.
@@ -125,13 +125,13 @@ class TestResultFabrication:
 
         assert receipt["phase_2"]["execution"]["outcome"] == "failure"
 
-        # Agent changes outcome to "success" — signing payload does not include this field
+        # Agent changes outcome to "success"  -  signing payload does not include this field
         tampered = copy.deepcopy(receipt)
         tampered["phase_2"]["execution"]["outcome"] = "success"
 
         result = verify_receipt(tampered, registry)
 
-        # This assertion WILL FAIL — exposing the hole:
+        # This assertion WILL FAIL  -  exposing the hole:
         # The outcome string is not in the signing payload, so the signature still verifies.
         assert result["valid"] is False, (
             "HOLE 1: The `outcome` field ('success'/'failure'/'partial') is NOT included in "

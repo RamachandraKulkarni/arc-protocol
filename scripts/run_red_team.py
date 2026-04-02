@@ -33,7 +33,7 @@ def run(verbose: bool = False, report_file: str | None = None):
         lines.append(line)
 
     emit("=" * 62)
-    emit("ARC PROTOCOL — RED TEAM TEST RESULTS")
+    emit("ARC PROTOCOL  -  RED TEAM TEST RESULTS")
     emit(f"Generated: {datetime.now(timezone.utc).isoformat()}")
     emit("=" * 62)
 
@@ -51,7 +51,7 @@ def run(verbose: bool = False, report_file: str | None = None):
         if not passed:
             all_passed = False
 
-        status = "✓  PASSED" if passed else "✗  FAILED — hole detected or test error"
+        status = "✓  PASSED" if passed else "✗  FAILED  -  hole detected or test error"
         emit(f"\n  {name}")
         emit(f"  {status}")
 
@@ -72,7 +72,7 @@ def run(verbose: bool = False, report_file: str | None = None):
         emit("OVERALL: FAILURES DETECTED ✗")
         emit(f"Failed test suites: {', '.join(failed)}")
         emit("")
-        emit("NOTE: Some failures are EXPECTED — they expose documented holes.")
+        emit("NOTE: Some failures are EXPECTED  -  they expose documented holes.")
         emit("See RED_TEAM_FINDINGS.md for details on each hole.")
     emit("=" * 62)
 

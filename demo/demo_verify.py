@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ARC Protocol — Third-Party Verification Demo
+ARC Protocol  -  Third-Party Verification Demo
 Demonstrates verification of a receipt from the public log server alone.
 No access to original context, keypairs, or tool runtime required.
 
@@ -32,7 +32,7 @@ def main():
     base_url = "http://localhost:8080"
 
     print("=" * 60)
-    print("ARC Protocol — Third-Party Verification")
+    print("ARC Protocol  -  Third-Party Verification")
     print("=" * 60)
     print()
     print(f"  Receipt ID: {receipt_id}")

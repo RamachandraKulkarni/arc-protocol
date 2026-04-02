@@ -221,8 +221,8 @@ class ARCInMemoryLog:
         """
         Check that the entire log is internally consistent.
 
-        Pass 1: Merkle root chain — entry[n].merkle_root == entry[n+1].previous_root
-        Pass 2: Content integrity — rebuild Merkle tree from content_hashes and verify
+        Pass 1: Merkle root chain  -  entry[n].merkle_root == entry[n+1].previous_root
+        Pass 2: Content integrity  -  rebuild Merkle tree from content_hashes and verify
                 the rebuilt root matches the stored final merkle_root.
         """
         with self._lock:

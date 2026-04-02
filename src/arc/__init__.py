@@ -1,5 +1,5 @@
 """
-ARC Protocol — Agent Receipt & Certification
+ARC Protocol  -  Agent Receipt & Certification
 Cryptographic proof of execution for AI agents.
 """
 

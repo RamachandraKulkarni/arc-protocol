@@ -62,7 +62,7 @@ def _build_minimal_intent(tag: str = "x") -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Surface 1 — expanded signing payload
+# Surface 1  -  expanded signing payload
 # ---------------------------------------------------------------------------
 
 class TestExpandedSigningPayload:
@@ -81,7 +81,7 @@ class TestExpandedSigningPayload:
 
         tampered = copy.deepcopy(receipt)
         tampered["phase_2"]["execution"]["outcome"] = "failure"
-        # outcome_hash is intentionally left unchanged — only the string changes
+        # outcome_hash is intentionally left unchanged  -  only the string changes
 
         result = verify_receipt(tampered, registry)
 
@@ -113,11 +113,11 @@ class TestExpandedSigningPayload:
         """
         Change is_reversible=True→False in the inverse block without re-signing.
         Because is_reversible is now in the signing payload, the signature must fail.
-        (Separate from the emergent fix — this tests the signing layer directly.)
+        (Separate from the emergent fix  -  this tests the signing layer directly.)
         """
         receipt = _get_valid_receipt(ctx, temp_dir)
         if receipt["phase_2"].get("inverse") is None:
-            pytest.skip("receipt has no inverse block — resource not reversible")
+            pytest.skip("receipt has no inverse block  -  resource not reversible")
 
         assert receipt["phase_2"]["inverse"]["is_reversible"] is True
 
@@ -142,7 +142,7 @@ class TestExpandedSigningPayload:
 
 
 # ---------------------------------------------------------------------------
-# Surface 2 — emergent fix: is_reversible=False + inverse_signature present
+# Surface 2  -  emergent fix: is_reversible=False + inverse_signature present
 # ---------------------------------------------------------------------------
 
 class TestIsReversibleContradiction:
@@ -165,13 +165,13 @@ class TestIsReversibleContradiction:
         receipt = _get_valid_receipt(ctx, temp_dir)
         inverse = receipt.get("phase_2", {}).get("inverse", {})
         if not inverse or not inverse.get("inverse_signature"):
-            pytest.skip("receipt has no inverse_signature — skip structural-contradiction test")
+            pytest.skip("receipt has no inverse_signature  -  skip structural-contradiction test")
 
         assert inverse["is_reversible"] is True
 
         tampered = copy.deepcopy(receipt)
         tampered["phase_2"]["inverse"]["is_reversible"] = False
-        # inverse_signature intentionally kept — the structural contradiction we're testing
+        # inverse_signature intentionally kept  -  the structural contradiction we're testing
 
         result = verify_receipt(tampered, registry)
 
@@ -187,7 +187,7 @@ class TestIsReversibleContradiction:
     def test_is_reversible_true_without_signature_is_not_flagged(self, ctx, temp_dir, registry):
         """
         Baseline: is_reversible=True but no inverse_signature (tool chose not to include it).
-        This is a legitimate receipt — the check must not false-positive here.
+        This is a legitimate receipt  -  the check must not false-positive here.
         """
         # Build a receipt where is_reversible ends up False (failure outcome → no inverse)
         receipt = _get_failure_receipt(ctx, temp_dir)
@@ -198,7 +198,7 @@ class TestIsReversibleContradiction:
             pytest.skip("unexpected inverse_signature on failure receipt")
 
         result = verify_receipt(receipt, registry)
-        # Failure receipts fail only if signature is invalid — check structural contradiction
+        # Failure receipts fail only if signature is invalid  -  check structural contradiction
         # check specifically does not fire (inverse_signature_valid should be None, not False)
         assert result["checks"]["inverse_signature_valid"] is None, (
             "No inverse_signature → check should be None (not applicable), not False"
@@ -206,7 +206,7 @@ class TestIsReversibleContradiction:
 
 
 # ---------------------------------------------------------------------------
-# Surface 3 — duplicate guard edge cases
+# Surface 3  -  duplicate guard edge cases
 # ---------------------------------------------------------------------------
 
 class TestDuplicateGuard:
@@ -221,7 +221,7 @@ class TestDuplicateGuard:
         """
         Sequence: intent → receipt → intent (second attempt)
         The second intent commit must raise ARCLogError because a receipt is already
-        in the log for that receipt_id — backdated intent injection rejected.
+        in the log for that receipt_id  -  backdated intent injection rejected.
         """
         rid = new_receipt_id()
         intent = _build_minimal_intent("first")
@@ -279,7 +279,7 @@ class TestDuplicateGuard:
     def test_two_receipts_for_same_id_rejected(self, log):
         """
         Sequence: intent → receipt → receipt (second attempt)
-        The second receipt commit must raise ARCLogError — replay attack rejected.
+        The second receipt commit must raise ARCLogError  -  replay attack rejected.
         """
         rid = new_receipt_id()
         intent = _build_minimal_intent("dup")
@@ -404,7 +404,7 @@ class TestDuplicateGuard:
 
 
 # ---------------------------------------------------------------------------
-# Surface 4 — timestamp ordering boundary
+# Surface 4  -  timestamp ordering boundary
 # ---------------------------------------------------------------------------
 
 class TestTimestampOrdering:
@@ -450,7 +450,7 @@ class TestTimestampOrdering:
         receipt = _get_valid_receipt(ctx, temp_dir)
 
         tampered = copy.deepcopy(receipt)
-        # Use a timestamp far in the future — definitely after started_at
+        # Use a timestamp far in the future  -  definitely after started_at
         tampered["phase_1"]["intent"]["declared_at"] = "2099-12-31T23:59:59Z"
 
         result = verify_receipt(tampered, registry)
@@ -464,7 +464,7 @@ class TestTimestampOrdering:
 
 
 # ---------------------------------------------------------------------------
-# Surface 5 — Merkle content_hash tamper at boundary (last entry)
+# Surface 5  -  Merkle content_hash tamper at boundary (last entry)
 # ---------------------------------------------------------------------------
 
 class TestMerkleLastEntryTamper:

@@ -1,6 +1,6 @@
 """
 ATTACK 3: Fake Provider Signature
-An agent generates its own Ed25519 keypair and uses it to sign the receipt —
+An agent generates its own Ed25519 keypair and uses it to sign the receipt  - 
 hoping the verifier trusts any valid signature rather than checking against the
 registered provider key.
 
@@ -35,7 +35,7 @@ class TestFakeSignature:
     def test_agent_generated_keypair_rejected(self, ctx, temp_dir, registry):
         """
         Agent generates its own valid Ed25519 keypair, correctly constructs the
-        signing payload, and signs it with its own key — producing a cryptographically
+        signing payload, and signs it with its own key  -  producing a cryptographically
         valid signature but from the WRONG key.
 
         verify_receipt() must look up the REGISTERED key and reject the foreign signature.
@@ -69,7 +69,7 @@ class TestFakeSignature:
     def test_unregistered_provider_id_rejected(self, ctx, temp_dir):
         """
         Agent changes provider_id to a non-existent provider.
-        An empty registry cannot look up the key — verification must fail with a
+        An empty registry cannot look up the key  -  verification must fail with a
         specific error naming the provider.
         """
         receipt = self._get_valid_receipt(ctx, temp_dir)
@@ -91,7 +91,7 @@ class TestFakeSignature:
         """
         Registry exists but maps provider_name to a DIFFERENT (attacker's) public key.
         The receipt's signature was made with the real provider key, which no longer
-        appears in the registry — verification must fail.
+        appears in the registry  -  verification must fail.
         """
         receipt = self._get_valid_receipt(ctx, temp_dir)
 
@@ -105,11 +105,11 @@ class TestFakeSignature:
 
     def test_revoked_provider_excluded_from_registry_rejected(self, ctx, temp_dir):
         """
-        The provider's key has been revoked — simulated by removing it from the registry.
+        The provider's key has been revoked  -  simulated by removing it from the registry.
         verify_receipt() cannot find the key and must reject the receipt.
 
         Note: The current implementation has no explicit revocation concept. Revocation
-        is modeled by key removal from the registry. There is no 'revoked' error message —
+        is modeled by key removal from the registry. There is no 'revoked' error message  - 
         verify_receipt() reports 'Provider not found in registry'.
         """
         receipt = self._get_valid_receipt(ctx, temp_dir)

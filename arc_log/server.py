@@ -1,5 +1,5 @@
 ﻿"""
-ARC Transparency Log Server — FastAPI application.
+ARC Transparency Log Server  -  FastAPI application.
 Three endpoints for writing and reading log entries.
 """
 

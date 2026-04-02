@@ -47,9 +47,9 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     Every print statement is part of the evidence report.
 
     Three attacks are demonstrated:
-    1. Fabrication — CAUGHT by provider signature ✓
-    2. Log tampering — CAUGHT by Merkle chain check ✓
-    3. Rollback denial — REFUTED by signed inverse op ✓
+    1. Fabrication  -  CAUGHT by provider signature ✓
+    2. Log tampering  -  CAUGHT by Merkle chain check ✓
+    3. Rollback denial  -  REFUTED by signed inverse op ✓
     """
     print("\n" + "=" * 60)
     print("ARC RED TEAM TEST: THE REPLIT SCENARIO")
@@ -104,7 +104,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     print(f"  Before-state captured: {snap_ref}")
     print(f"  Before-state hash: {receipt['phase_1']['before_state']['snapshot_hash'][:36]}...")
     print(f"  Phase 1 committed to log at sequence: {p1_seq}")
-    print(f"  ✓ Pre-action state is immutable — committed before execution")
+    print(f"  ✓ Pre-action state is immutable  -  committed before execution")
 
     print(f"\n[EXECUTION] Deleting {data_dir}...")
     assert not data_dir.exists(), "Directory should be deleted"
@@ -134,7 +134,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     result_fab = verify_receipt(tampered_fab, registry)
 
     assert result_fab["valid"] is False, (
-        "Fabrication must be detected — provider signature covers original outcome_hash"
+        "Fabrication must be detected  -  provider signature covers original outcome_hash"
     )
     assert result_fab["checks"]["provider_signature_valid"] is False
 
@@ -189,7 +189,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
 
     assert sig_verifies, "Provider inverse signature must verify"
     print(f"  Provider inverse signature: VALID (provider committed to rollback)")
-    print(f"  ✓ ROLLBACK DENIAL REFUTED — agent cannot override provider's signed commitment")
+    print(f"  ✓ ROLLBACK DENIAL REFUTED  -  agent cannot override provider's signed commitment")
 
     # ---------------------------------------------------------------
     # ROLLBACK EXECUTION
@@ -235,9 +235,9 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     print(f"\n  Real receipt verification: valid={final_check['valid']} ✓")
 
     # ---------------------------------------------------------------
-    # KNOWN HOLES — document but do not hide
+    # KNOWN HOLES  -  document but do not hide
     # ---------------------------------------------------------------
-    print("\n[KNOWN HOLES — see RED_TEAM_FINDINGS.md]")
+    print("\n[KNOWN HOLES  -  see RED_TEAM_FINDINGS.md]")
     print("  Hole 1: outcome field ('success'/'failure') not in signing payload")
     print("  Hole 2: is_reversible field not in signing payload")
     print("  Hole 3: content_hash modification not detected by verify_consistency()")

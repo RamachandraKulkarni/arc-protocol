@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://arc-protocol.org/v1/schemas/action-receipt.schema.json",
   "title": "ActionReceipt",
-  "description": "ARC Agent Action Receipt — cryptographically signed record of an agent action",
+  "description": "ARC Agent Action Receipt  -  cryptographically signed record of an agent action",
   "type": "object",
   "required": ["arc_version", "receipt_id", "phase_1", "phase_2"],
   "additionalProperties": false,

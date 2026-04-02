@@ -8,7 +8,7 @@
 
 **Cryptographic receipts for AI agent tool calls.**
 
-The tool provider signs every action receipt with Ed25519 — not the agent. Before execution, the resource state is snapshotted and the declared intent is committed to an RFC 6962 Merkle transparency log. After execution, the provider signs a seven-field canonical payload and commits the full receipt. An agent cannot forge the provider's signature to deny what happened, claim a different result, or lie about rollback availability.
+The tool provider signs every action receipt with Ed25519  -  not the agent. Before execution, the resource state is snapshotted and the declared intent is committed to an RFC 6962 Merkle transparency log. After execution, the provider signs a seven-field canonical payload and commits the full receipt. An agent cannot forge the provider's signature to deny what happened, claim a different result, or lie about rollback availability.
 
 **Protocol v1.1. 58/58 tests passing. 5/5 live receipts cross-verified. EU AI Act Article 12 ready.**
 
@@ -72,7 +72,7 @@ PHASE 2: POST-EXECUTION (after the tool runs)
 }
 ```
 
-The tool provider signs this payload — not the agent. This is the core architectural decision: the party with ground-truth knowledge of what actually executed provides the cryptographic attestation. An agent that fabricates results produces a receipt whose signature does not verify. An agent that claims rollback is impossible contradicts the provider-signed `inverse_signature` in the receipt.
+The tool provider signs this payload  -  not the agent. This is the core architectural decision: the party with ground-truth knowledge of what actually executed provides the cryptographic attestation. An agent that fabricates results produces a receipt whose signature does not verify. An agent that claims rollback is impossible contradicts the provider-signed `inverse_signature` in the receipt.
 
 ---
 
@@ -80,7 +80,7 @@ The tool provider signs this payload — not the agent. This is the core archite
 
 ### 1. Proof of Execution
 
-The `outcome_hash` in Phase 2 is the SHA-256 of the canonical JSON of the tool's actual return value. The provider signs this hash alongside the `receipt_id` and `before_state_hash`. If an agent reports a different result than what the provider attested, the signature does not verify — regardless of how plausible the fabrication appears in natural language.
+The `outcome_hash` in Phase 2 is the SHA-256 of the canonical JSON of the tool's actual return value. The provider signs this hash alongside the `receipt_id` and `before_state_hash`. If an agent reports a different result than what the provider attested, the signature does not verify  -  regardless of how plausible the fabrication appears in natural language.
 
 ```python
 # Verification catches fabrication:
@@ -210,7 +210,7 @@ make demo-verify RECEIPT_ID=arc_01...  # Third-party verify from receipt ID only
 [PHASE 1] Agent declares intent to delete...
   Before-state captured: snap_01JTXM... (sha256:abc123...)
   Intent committed to log at sequence 0
-  ✓ Phase 1 is immutable — agent cannot change what it declared
+  ✓ Phase 1 is immutable  -  agent cannot change what it declared
 
 [EXECUTION] Deleting directory...
   Directory deleted. Receipt ID: arc_01JTXM...
@@ -218,7 +218,7 @@ make demo-verify RECEIPT_ID=arc_01...  # Third-party verify from receipt ID only
 --- BEHAVIOR 1: Agent fabricates result ---
   Fabricated hash: sha256:jkl012...
   Receipt hash:    sha256:def456...
-  ✗ MISMATCH — provider signature does not match
+  ✗ MISMATCH  -  provider signature does not match
   ✓ ARC detected fabrication
 
 --- BEHAVIOR 2: Agent tampers with log ---
@@ -350,7 +350,7 @@ make red-team-live     # run the Replit scenario end-to-end
 
 ## Live Cross-Agent Proof
 
-Five receipts were generated in a real Claude Code session on Windows 11 and verified by a completely isolated Python process with zero session knowledge — no access to the original keypairs, context, or tool runtime. The verifier received only the receipt IDs and a log server URL.
+Five receipts were generated in a real Claude Code session on Windows 11 and verified by a completely isolated Python process with zero session knowledge  -  no access to the original keypairs, context, or tool runtime. The verifier received only the receipt IDs and a log server URL.
 
 | Receipt ID | Action | Intent seq | Receipt seq |
 |------------|--------|-----------|-------------|
@@ -362,11 +362,11 @@ Five receipts were generated in a real Claude Code session on Windows 11 and ver
 
 **All 4 checks passed for all 5 receipts:** `found_in_log`, `log_chain_consistent`, `intent_committed`, `receipt_committed`.
 
-Intent sequence numbers (2, 4, 6, 8, 10) always preceded receipt sequence numbers (3, 5, 7, 9, 11). This proves Phase 1 was committed before execution in every case — the log ordering cannot be faked after the fact.
+Intent sequence numbers (2, 4, 6, 8, 10) always preceded receipt sequence numbers (3, 5, 7, 9, 11). This proves Phase 1 was committed before execution in every case  -  the log ordering cannot be faked after the fact.
 
 ```
 Total: 5  Valid: 5  Invalid: 0
-OVERALL: ALL VALID — PROOF COMPLETE
+OVERALL: ALL VALID  -  PROOF COMPLETE
 ```
 
 ---
@@ -508,7 +508,7 @@ arc-protocol/
 ## Research Paper
 
 **ARC: A Two-Phase Cryptographic Receipt Protocol for Verifiable AI Agent Execution**
-Ramachandra Kulkarni, Harin Kumar Mallela, Arun Basavaraj Alur — April 2026
+Ramachandra Kulkarni, Harin Kumar Mallela, Arun Basavaraj Alur  -  April 2026
 *Unpublished preprint. Not yet peer-reviewed.*
 
 8 pages. Covers the action receipt primitive, seven JSON Schema definitions, the complete red team evaluation (6 holes found and fixed, 58/58 tests), and the live cross-agent verification proof on Windows 11 with Claude Code.
