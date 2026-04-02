@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/provider-attestation.schema.json",
+  "title": "ProviderAttestation",
+  "$defs": {
+    "Phase2": {
+      "type": "object",
+      "required": ["execution", "provider_attestation", "log_proof"],
+      "additionalProperties": false,
+      "properties": {
+        "execution": { "$ref": "#/$defs/Execution" },
+        "provider_attestation": { "$ref": "#/$defs/Attestation" },
+        "inverse": { "$ref": "inverse-operation.schema.json#/$defs/InverseOperation" },
+        "log_proof": { "$ref": "intent.schema.json#/$defs/LogCommitment" }
+      }
+    },
+    "Execution": {
+      "type": "object",
+      "required": ["started_at", "completed_at", "duration_ms", "outcome", "outcome_hash"],
+      "additionalProperties": false,
+      "properties": {
+        "started_at": { "type": "string", "format": "date-time" },
+        "completed_at": { "type": "string", "format": "date-time" },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outcome": {
+          "type": "string",
+          "enum": ["success", "failure", "partial"]
+        },
+        "outcome_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "error_code": { "type": "string" },
+        "error_message": { "type": "string" }
+      }
+    },
+    "Attestation": {
+      "type": "object",
+      "required": ["provider_id", "provider_name", "signed_at", "signature", "signed_payload_hash"],
+      "additionalProperties": false,
+      "properties": {
+        "provider_id": { "type": "string" },
+        "provider_name": { "type": "string" },
+        "signed_at": { "type": "string", "format": "date-time" },
+        "signature": {
+          "type": "string",
+          "pattern": "^ed25519:[A-Za-z0-9+/]{86}==$"
+        },
+        "signed_payload_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        }
+      }
+    }
+  }
+}

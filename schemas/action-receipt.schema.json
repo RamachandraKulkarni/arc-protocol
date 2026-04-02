@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/action-receipt.schema.json",
+  "title": "ActionReceipt",
+  "description": "ARC Agent Action Receipt — cryptographically signed record of an agent action",
+  "type": "object",
+  "required": ["arc_version", "receipt_id", "phase_1", "phase_2"],
+  "additionalProperties": false,
+  "properties": {
+    "arc_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Protocol version. Bump minor for backward-compatible changes, major for breaking."
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^arc_[0-9A-Z]{26}$",
+      "description": "Globally unique receipt ID. Format: arc_ prefix + 26-char ULID (uppercase)."
+    },
+    "phase_1": {
+      "type": "object",
+      "description": "Pre-action declaration. Committed to log BEFORE execution.",
+      "required": ["intent", "before_state", "log_commitment"],
+      "additionalProperties": false,
+      "properties": {
+        "intent": {
+          "type": "object",
+          "required": ["intent_id", "tool_name", "arguments", "declared_by", "reasoning_commitment", "declared_at"],
+          "additionalProperties": false,
+          "properties": {
+            "intent_id": {
+              "type": "string",
+              "pattern": "^intent_[0-9A-Z]{26}$"
+            },
+            "tool_name": { "type": "string" },
+            "tool_provider_id": { "type": "string" },
+            "arguments": { "type": "object" },
+            "declared_by": {
+              "type": "object",
+              "required": ["agent_id", "model_version", "session_id"],
+              "properties": {
+                "agent_id": { "type": "string" },
+                "model_version": { "type": "string" },
+                "session_id": { "type": "string" }
+              }
+            },
+            "on_behalf_of": { "type": "string" },
+            "authorization": {
+              "type": "object",
+              "properties": {
+                "scope": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "granted_by": { "type": "string" },
+                "delegation_chain": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "parent_receipt_id": {
+                  "type": "string",
+                  "pattern": "^arc_[0-9A-Z]{26}$"
+                }
+              }
+            },
+            "reasoning_commitment": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "declared_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "before_state": {
+          "type": "object",
+          "required": ["resource_uri", "resource_type", "snapshot_hash", "captured_at"],
+          "additionalProperties": false,
+          "properties": {
+            "resource_uri": { "type": "string" },
+            "resource_type": {
+              "type": "string",
+              "enum": [
+                "filesystem:file",
+                "filesystem:directory",
+                "database:row",
+                "database:table",
+                "database:collection",
+                "email:message",
+                "email:inbox",
+                "api:response",
+                "memory:key",
+                "memory:namespace",
+                "process:state",
+                "custom"
+              ]
+            },
+            "snapshot_ref": {
+              "type": "string",
+              "pattern": "^snap_[0-9A-Z]{26}$"
+            },
+            "snapshot_hash": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "snapshot_size_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "captured_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "is_reversible": { "type": "boolean" }
+          }
+        },
+        "log_commitment": {
+          "type": "object",
+          "required": ["log_id", "sequence_number", "merkle_root", "committed_at"],
+          "additionalProperties": false,
+          "properties": {
+            "log_id": { "type": "string" },
+            "sequence_number": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "merkle_root": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "inclusion_proof": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            },
+            "committed_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    },
+    "phase_2": {
+      "type": "object",
+      "description": "Post-execution attestation. Committed to log AFTER execution.",
+      "required": ["execution", "provider_attestation", "log_proof"],
+      "additionalProperties": false,
+      "properties": {
+        "execution": {
+          "type": "object",
+          "required": ["started_at", "completed_at", "duration_ms", "outcome", "outcome_hash"],
+          "additionalProperties": false,
+          "properties": {
+            "started_at": { "type": "string", "format": "date-time" },
+            "completed_at": { "type": "string", "format": "date-time" },
+            "duration_ms": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "outcome": {
+              "type": "string",
+              "enum": ["success", "failure", "partial"]
+            },
+            "outcome_hash": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "error_code": { "type": "string" },
+            "error_message": { "type": "string" }
+          }
+        },
+        "provider_attestation": {
+          "type": "object",
+          "required": ["provider_id", "provider_name", "signed_at", "signature", "signed_payload_hash"],
+          "additionalProperties": false,
+          "properties": {
+            "provider_id": { "type": "string" },
+            "provider_name": { "type": "string" },
+            "signed_at": { "type": "string", "format": "date-time" },
+            "signature": {
+              "type": "string",
+              "pattern": "^ed25519:[A-Za-z0-9+/]{86}==$"
+            },
+            "signed_payload_hash": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            }
+          }
+        },
+        "inverse": {
+          "type": "object",
+          "required": ["is_reversible"],
+          "additionalProperties": false,
+          "properties": {
+            "is_reversible": { "type": "boolean" },
+            "inverse_tool": { "type": "string" },
+            "inverse_arguments": { "type": "object" },
+            "valid_until": { "type": "string", "format": "date-time" },
+            "inverse_signature": {
+              "type": "string",
+              "pattern": "^ed25519:[A-Za-z0-9+/]{86}==$"
+            },
+            "estimated_duration_ms": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "if": { "properties": { "is_reversible": { "const": true } } },
+          "then": {
+            "required": ["inverse_tool", "inverse_arguments", "valid_until", "inverse_signature"]
+          }
+        },
+        "log_proof": {
+          "type": "object",
+          "required": ["log_id", "sequence_number", "merkle_root", "committed_at"],
+          "additionalProperties": false,
+          "properties": {
+            "log_id": { "type": "string" },
+            "sequence_number": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "merkle_root": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "inclusion_proof": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            },
+            "committed_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        }
+      }
+    }
+  }
+}

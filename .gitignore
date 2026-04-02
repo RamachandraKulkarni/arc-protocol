@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+*.egg
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ARC runtime artifacts
+arc_log.db
+*.db
+*.db-shm
+*.db-wal
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.log
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz
+paper/*.nav
+paper/*.snm
+paper/*.vrb
+
+# Node / website build
+node_modules/
+website/dist/
+website/.vite/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Virtual environments
+venv/
+.venv/
+env/

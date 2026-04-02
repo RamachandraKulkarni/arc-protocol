@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Protocol — Cryptographic Agent Accountability</title>
+  <meta name="description" content="ARC: A two-phase cryptographic receipt protocol for verifiable AI agent execution. Proof of execution, tamper-evident logs, signed rollback." />
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const C = {
+      bg:          "#1a1714",
+      low:         "#231f1c",
+      mid:         "#2c2825",
+      high:        "#38332f",
+      highest:     "#443f3a",
+      accent:      "#d97757",
+      accentDim:   "#b5614a",
+      accentGlow:  "rgba(217,119,87,0.12)",
+      accentGlow2: "rgba(217,119,87,0.06)",
+      onPrimary:   "#ffffff",
+      green:       "#7ec984",
+      greenDim:    "#5a9c60",
+      red:         "#ffb4ab",
+      amber:       "#ffb300",
+      text:        "#ede8e2",
+      textDim:     "#c4b7ae",
+      textBright:  "#f5f0ea",
+      outline:     "#9b8880",
+      outlineV:    "#4a3f3a",
+      mono: "'IBM Plex Mono', 'Courier New', monospace",
+      sans: "'IBM Plex Sans', 'Segoe UI', sans-serif",
+    };
+
+    const fontLink = document.createElement("link");
+    fontLink.rel = "stylesheet";
+    fontLink.href = "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap";
+    document.head.appendChild(fontLink);
+
+    const globalCSS = `
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body {
+        background: ${C.bg};
+        color: ${C.text};
+        font-family: ${C.sans};
+        font-size: 15px;
+        line-height: 1.65;
+        overflow-x: hidden;
+      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: ${C.bg}; }
+      ::-webkit-scrollbar-thumb { background: ${C.outlineV}; border-radius: 3px; }
+      ::-webkit-scrollbar-thumb:hover { background: ${C.outline}; }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+      @keyframes gridFlow { 0% { background-position: 0 0; } 100% { background-position: 40px 40px; } }
+      @keyframes dataStream {
+        0%   { opacity: 0; transform: translateX(-8px); }
+        20%  { opacity: 1; }
+        80%  { opacity: 1; }
+        100% { opacity: 0; transform: translateX(8px); }
+      }
+      @keyframes chainPulse { 0%, 100% { stroke-opacity: 0.3; } 50% { stroke-opacity: 1; } }
+      .fade-up { animation: fadeUp 0.6s ease forwards; }
+      .fade-in { animation: fadeIn 0.4s ease forwards; }
+      a { color: inherit; }
+    `;
+    const styleEl = document.createElement("style");
+    styleEl.textContent = globalCSS;
+    document.head.appendChild(styleEl);
+
+    const PROVENANCE = Object.freeze({
+      RESEARCH_INCEPTION: "2026-03-01T00:00:00.000Z",
+      PAPER_CREATED:      "2026-04-02T00:00:00.000Z",
+      PROTOCOL_VERSION:   "v1.1",
+      PUBLICATION_STATUS: "Unpublished Preprint",
+    });
+
+    const REPO = "https://github.com/RamachandraKulkarni/arc-protocol";
+
+    function WarmGrid() {
+      return (
+        <div style={{
+          position: "fixed", inset: 0, pointerEvents: "none", zIndex: 0,
+          backgroundImage: `
+            linear-gradient(rgba(217,119,87,0.025) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(217,119,87,0.025) 1px, transparent 1px)
+          `,
+          backgroundSize: "40px 40px",
+          animation: "gridFlow 12s linear infinite",
+        }} />
+      );
+    }
+
+    function MerkleDecoration({ size = 200 }) {
+      const nodes = [
+        { id: "root", x: 100, y: 20, label: "root" },
+        { id: "n1", x: 50, y: 80, label: "n1" },
+        { id: "n2", x: 150, y: 80, label: "n2" },
+        { id: "l1", x: 25, y: 140, label: "L1" },
+        { id: "l2", x: 75, y: 140, label: "L2" },
+        { id: "l3", x: 125, y: 140, label: "L3" },
+        { id: "l4", x: 175, y: 140, label: "L4" },
+      ];
+      const edges = [["root","n1"],["root","n2"],["n1","l1"],["n1","l2"],["n2","l3"],["n2","l4"]];
+      return (
+        <svg width={size} height={size * 0.85} viewBox="0 0 200 170" style={{ opacity: 0.18 }}>
+          {edges.map(([a, b], i) => {
+            const na = nodes.find(n => n.id === a);
+            const nb = nodes.find(n => n.id === b);
+            return (
+              <line key={i} x1={na.x} y1={na.y} x2={nb.x} y2={nb.y}
+                stroke={C.accent} strokeWidth="1.5"
+                style={{ animation: `chainPulse ${1.5 + i * 0.3}s ease-in-out infinite` }} />
+            );
+          })}
+          {nodes.map(n => (
+            <g key={n.id}>
+              <circle cx={n.x} cy={n.y} r="9" fill={C.bg} stroke={C.accent} strokeWidth="1.5" />
+              <text x={n.x} y={n.y + 4} textAnchor="middle" fill={C.accent} fontSize="7"
+                fontFamily={C.mono}>{n.label}</text>
+            </g>
+          ))}
+        </svg>
+      );
+    }
+
+    function ReceiptCard({ receipt, index }) {
+      const [visible, setVisible] = useState(false);
+      useEffect(() => {
+        const t = setTimeout(() => setVisible(true), index * 120);
+        return () => clearTimeout(t);
+      }, [index]);
+      return (
+        <div style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(16px)",
+          transition: "all 0.5s ease",
+          background: C.low,
+          border: `1px solid ${C.outlineV}`,
+          borderRadius: "8px",
+          padding: "16px",
+          fontFamily: C.mono,
+          fontSize: "12px",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+            <span style={{ color: C.accent, fontWeight: 600 }}>{receipt.id}</span>
+            <span style={{
+              color: receipt.valid ? C.green : C.red,
+              fontSize: "11px",
+              background: receipt.valid ? "rgba(126,201,132,0.1)" : "rgba(255,180,171,0.1)",
+              padding: "2px 8px", borderRadius: "3px",
+            }}>
+              {receipt.valid ? "VALID" : "INVALID"}
+            </span>
+          </div>
+          <div style={{ color: C.textDim, marginBottom: "4px", fontSize: "11px" }}>{receipt.command}</div>
+          <div style={{ display: "flex", gap: "16px", marginTop: "8px" }}>
+            <span style={{ color: C.textDim, fontSize: "10px" }}>
+              intent seq: <span style={{ color: C.text }}>{receipt.intentSeq}</span>
+            </span>
+            <span style={{ color: C.textDim, fontSize: "10px" }}>
+              receipt seq: <span style={{ color: C.text }}>{receipt.receiptSeq}</span>
+            </span>
+          </div>
+        </div>
+      );
+    }
+
+    function AttackRow({ attack }) {
+      const [hovered, setHovered] = useState(false);
+      return (
+        <tr
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{ background: hovered ? C.mid : "transparent", transition: "background 0.2s" }}>
+          <td style={{ padding: "10px 14px", color: C.text, fontSize: "13px" }}>{attack.name}</td>
+          <td style={{ padding: "10px 14px", textAlign: "center" }}>
+            <span style={{ color: attack.v10 === "Caught" ? C.green : C.red, fontFamily: C.mono, fontSize: "12px", fontWeight: 600 }}>
+              {attack.v10}
+            </span>
+          </td>
+          <td style={{ padding: "10px 14px", textAlign: "center" }}>
+            <span style={{ color: C.green, fontFamily: C.mono, fontSize: "12px", fontWeight: 600 }}>
+              {attack.v11}
+            </span>
+          </td>
+        </tr>
+      );
+    }
+
+    function TestFileRow({ test, index }) {
+      const [hovered, setHovered] = useState(false);
+      return (
+        <tr
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{ background: hovered ? C.mid : "transparent", transition: "background 0.2s", borderBottom: `1px solid ${C.outlineV}` }}>
+          <td style={{ padding: "10px 14px" }}>
+            <a href={`${REPO}/blob/main/tests/red_team/${test.file}`}
+              target="_blank" rel="noreferrer"
+              style={{ color: C.accent, fontFamily: C.mono, fontSize: "12px", textDecoration: "none" }}>
+              {test.file}
+            </a>
+          </td>
+          <td style={{ padding: "10px 14px", color: C.text, fontSize: "13px" }}>{test.name}</td>
+          <td style={{ padding: "10px 14px", fontSize: "12px", color: C.textDim, maxWidth: "300px" }}>{test.desc}</td>
+          <td style={{ padding: "10px 14px", textAlign: "center" }}>
+            <span style={{ color: C.green, fontFamily: C.mono, fontSize: "12px", fontWeight: 600 }}>{test.count}</span>
+          </td>
+        </tr>
+      );
+    }
+
+    function ProvenanceTimer() {
+      const [elapsed, setElapsed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      const [researchElapsed, setResearchElapsed] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+      useEffect(() => {
+        const calc = (from) => {
+          const diff = Math.max(0, Date.now() - new Date(from).getTime());
+          const s = Math.floor(diff / 1000);
+          return { days: Math.floor(s / 86400), hours: Math.floor((s % 86400) / 3600), minutes: Math.floor((s % 3600) / 60), seconds: s % 60 };
+        };
+        const tick = () => {
+          setElapsed(calc(PROVENANCE.PAPER_CREATED));
+          setResearchElapsed(calc(PROVENANCE.RESEARCH_INCEPTION));
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+      }, []);
+
+      const pad = (n) => String(n).padStart(2, "0");
+
+      const TimeBlock = ({ value, label }) => (
+        <div style={{ textAlign: "center", minWidth: "48px" }}>
+          <div style={{
+            fontFamily: C.mono, fontSize: "22px", fontWeight: 700, color: C.accent,
+            background: C.bg, border: `1px solid ${C.outlineV}`, borderRadius: "4px",
+            padding: "4px 8px", lineHeight: 1,
+          }}>{pad(value)}</div>
+          <div style={{ fontFamily: C.mono, fontSize: "9px", color: C.textDim, marginTop: "4px", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+            {label}
+          </div>
+        </div>
+      );
+
+      const Colon = () => (
+        <span style={{ fontFamily: C.mono, fontSize: "22px", color: C.outlineV, lineHeight: "32px" }}>:</span>
+      );
+
+      return (
+        <div style={{
+          background: C.low, border: `1px solid ${C.outlineV}`,
+          borderRadius: "10px", padding: "28px", marginTop: "36px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
+            <div style={{
+              width: "8px", height: "8px", borderRadius: "50%",
+              background: C.green, boxShadow: `0 0 8px ${C.green}`,
+              animation: "pulse 2s ease infinite",
+            }} />
+            <span style={{ fontFamily: C.mono, fontSize: "12px", fontWeight: 700, color: C.textBright, letterSpacing: "0.1em" }}>
+              DOCUMENT PROVENANCE (IMMUTABLE)
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "24px" }}>
+            {[
+              { label: "RESEARCH INCEPTION", date: "March 01, 2026", time: "00:00:00 UTC" },
+              { label: "PAPER CREATED", date: "April 02, 2026", time: "00:00:00 UTC" },
+            ].map((item, i) => (
+              <div key={i} style={{ background: C.bg, borderRadius: "6px", padding: "14px", border: `1px solid ${C.outlineV}` }}>
+                <div style={{ fontFamily: C.mono, fontSize: "10px", color: C.textDim, letterSpacing: "0.08em", marginBottom: "6px" }}>
+                  {item.label}
+                </div>
+                <div style={{ fontFamily: C.mono, fontSize: "15px", color: C.textBright, fontWeight: 600 }}>{item.date}</div>
+                <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.accentDim, marginTop: "4px" }}>{item.time}</div>
+              </div>
+            ))}
+          </div>
+
+          {[
+            { label: "TIME SINCE PAPER CREATION", data: elapsed },
+            { label: "TIME SINCE RESEARCH INCEPTION", data: researchElapsed },
+          ].map((section, i) => (
+            <div key={i} style={{ marginBottom: i === 0 ? "18px" : "0" }}>
+              <div style={{ fontFamily: C.mono, fontSize: "10px", color: C.textDim, letterSpacing: "0.08em", marginBottom: "10px" }}>
+                {section.label}
+              </div>
+              <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
+                <TimeBlock value={section.data.days} label="days" />
+                <Colon />
+                <TimeBlock value={section.data.hours} label="hours" />
+                <Colon />
+                <TimeBlock value={section.data.minutes} label="mins" />
+                <Colon />
+                <TimeBlock value={section.data.seconds} label="secs" />
+              </div>
+            </div>
+          ))}
+
+          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", borderTop: `1px solid ${C.outlineV}`, paddingTop: "14px", marginTop: "14px" }}>
+            {[
+              { k: "Protocol", v: PROVENANCE.PROTOCOL_VERSION },
+              { k: "Status", v: PROVENANCE.PUBLICATION_STATUS, color: C.amber },
+              { k: "Tests", v: "58/58 passing" },
+            ].map(({ k, v, color }, i) => (
+              <div key={i} style={{ fontFamily: C.mono, fontSize: "11px" }}>
+                <span style={{ color: C.textDim }}>{k}: </span>
+                <span style={{ color: color || C.text, fontWeight: 600 }}>{v}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            fontFamily: C.mono, fontSize: "10px", color: C.textDim,
+            marginTop: "14px", lineHeight: 1.6, fontStyle: "italic",
+            borderTop: `1px solid ${C.outlineV}`, paddingTop: "12px",
+          }}>
+            These timestamps are hardcoded in source and cannot be modified without a
+            visible git commit. Compare the SHA-256 of the published PDF against the
+            hash committed to the ARC Protocol GitHub repository to verify creation date.
+          </div>
+        </div>
+      );
+    }
+
+    function AuthorCard({ name, role, linkedin }) {
+      const [hovered, setHovered] = useState(false);
+      return (
+        <div
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={{
+            background: hovered ? C.mid : C.low,
+            border: `1px solid ${hovered ? C.outline : C.outlineV}`,
+            borderRadius: "8px", padding: "18px", transition: "all 0.2s ease",
+            flex: "1 1 200px",
+          }}>
+          <div style={{ fontFamily: C.mono, fontSize: "14px", fontWeight: 600, color: C.textBright, marginBottom: "4px" }}>
+            {name}
+          </div>
+          <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.textDim, marginBottom: linkedin ? "10px" : "0" }}>
+            {role}
+          </div>
+          {linkedin && (
+            <a href={linkedin} target="_blank" rel="noreferrer" style={{
+              fontFamily: C.mono, fontSize: "11px", color: C.accentDim, textDecoration: "none",
+            }}>
+              LinkedIn →
+            </a>
+          )}
+        </div>
+      );
+    }
+
+    function Nav({ active, onNav }) {
+      const items = ["Overview", "Protocol", "Security", "Tests", "Proof", "Paper"];
+      const [scrolled, setScrolled] = useState(false);
+      const [menuOpen, setMenuOpen] = useState(false);
+
+      useEffect(() => {
+        const handler = () => setScrolled(window.scrollY > 40);
+        window.addEventListener("scroll", handler);
+        return () => window.removeEventListener("scroll", handler);
+      }, []);
+
+      return (
+        <nav style={{
+          position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+          background: scrolled ? "rgba(26,23,20,0.96)" : "transparent",
+          backdropFilter: scrolled ? "blur(12px)" : "none",
+          borderBottom: scrolled ? `1px solid ${C.outlineV}` : "none",
+          transition: "all 0.3s ease",
+          padding: "0 max(20px, calc((100vw - 1100px)/2))",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "60px" }}>
+            <div style={{ fontFamily: C.mono, fontWeight: 700, fontSize: "18px", color: C.accent, letterSpacing: "0.08em" }}>
+              ARC<span style={{ color: C.textDim, fontWeight: 300 }}> protocol</span>
+            </div>
+            <div style={{ display: "flex", gap: "2px", flexWrap: "wrap" }}>
+              {items.map(item => {
+                const isActive = active === item.toLowerCase();
+                return (
+                  <button key={item}
+                    onClick={() => onNav(item.toLowerCase())}
+                    style={{
+                      background: isActive ? C.accentGlow : "transparent",
+                      border: isActive ? `1px solid ${C.accentDim}` : "1px solid transparent",
+                      color: isActive ? C.accent : C.textDim,
+                      padding: "6px 12px", borderRadius: "4px", cursor: "pointer",
+                      fontFamily: C.mono, fontSize: "12px", fontWeight: 500, transition: "all 0.2s ease",
+                    }}>
+                    {item}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </nav>
+      );
+    }
+
+    function Hero({ onNav }) {
+      const [tick, setTick] = useState(0);
+      useEffect(() => {
+        const t = setInterval(() => setTick(x => x + 1), 2400);
+        return () => clearInterval(t);
+      }, []);
+
+      const hashExamples = [
+        "sha256:7e37e6dd5b59bac5ebb9736f7d3759432db8a07811dc5094d92e3197f1ef74e2",
+        "sha256:cfc49a6f272ef63286ddb78a248e8ca3a517b3f9d1c2e4a8f6b7d9e0a1b2c3d",
+        "sha256:505dcddde0792fe12d941daebebaabe04b19c28e5a7f3d6e8b9a0c1d2e3f4a5",
+      ];
+
+      return (
+        <section id="overview" style={{
+          minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center",
+          padding: "80px max(32px, calc((100vw - 1100px)/2)) 60px",
+          position: "relative", overflow: "hidden",
+        }}>
+          <div style={{ position: "absolute", right: "max(32px, calc((100vw - 1100px)/2))", top: "50%", transform: "translateY(-50%)", opacity: 0.6 }}>
+            <MerkleDecoration size={280} />
+          </div>
+
+          <div style={{ maxWidth: "640px", position: "relative", zIndex: 1 }}>
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              fontFamily: C.mono, fontSize: "11px", color: C.accent, letterSpacing: "0.12em",
+              background: C.accentGlow, border: "1px solid rgba(217,119,87,0.25)",
+              borderRadius: "3px", padding: "4px 12px", marginBottom: "28px",
+              animation: "fadeIn 0.6s ease forwards",
+            }}>
+              <span style={{ animation: "pulse 2s ease infinite" }}>◆</span>
+              VERSION 1.1 · 58/58 TESTS PASSING
+            </div>
+
+            <h1 style={{
+              fontFamily: C.mono, fontSize: "clamp(36px, 5vw, 56px)", fontWeight: 700,
+              color: C.textBright, lineHeight: 1.1, marginBottom: "20px",
+              animation: "fadeUp 0.7s 0.1s ease both",
+            }}>
+              ARC Protocol<br />
+              <span style={{ color: C.accent }}>Cryptographic</span><br />
+              <span style={{ color: C.textDim, fontWeight: 300 }}>Agent Accountability</span>
+            </h1>
+
+            <p style={{
+              fontSize: "17px", color: C.textDim, lineHeight: 1.7, marginBottom: "36px",
+              maxWidth: "520px", animation: "fadeUp 0.7s 0.2s ease both",
+            }}>
+              Every AI agent tool call, wrapped in a two-phase signed receipt.
+              Proof of execution. Tamper-evident logs. Signed rollback.
+              Independent verification without session access.
+            </p>
+
+            <div style={{
+              fontFamily: C.mono, fontSize: "11px", color: C.accentDim,
+              background: C.low, border: `1px solid ${C.outlineV}`,
+              borderRadius: "6px", padding: "12px 16px", marginBottom: "36px",
+              overflow: "hidden", animation: "fadeUp 0.7s 0.3s ease both",
+            }}>
+              <span style={{ color: C.textDim }}>outcome_hash: </span>
+              <span key={tick} style={{ animation: "dataStream 2.4s ease forwards" }}>
+                {hashExamples[tick % hashExamples.length]}
+              </span>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", animation: "fadeUp 0.7s 0.4s ease both" }}>
+              <button onClick={() => onNav("protocol")} style={{
+                background: C.accent, color: C.bg, border: "none",
+                padding: "12px 28px", borderRadius: "4px", fontFamily: C.mono,
+                fontSize: "14px", fontWeight: 700, cursor: "pointer", letterSpacing: "0.04em",
+              }}>
+                Read the Protocol
+              </button>
+              <button onClick={() => onNav("paper")} style={{
+                background: "transparent", color: C.accent, border: `1px solid ${C.accentDim}`,
+                padding: "12px 28px", borderRadius: "4px", fontFamily: C.mono,
+                fontSize: "14px", fontWeight: 600, cursor: "pointer",
+              }}>
+                Download Paper
+              </button>
+            </div>
+          </div>
+
+          <div style={{
+            display: "flex", gap: "0", flexWrap: "wrap", marginTop: "60px",
+            borderTop: `1px solid ${C.outlineV}`, paddingTop: "32px",
+            animation: "fadeUp 0.7s 0.5s ease both",
+          }}>
+            {[
+              { label: "Tests Passing", value: "58/58" },
+              { label: "Security Holes Found", value: "6" },
+              { label: "Holes Fixed", value: "6" },
+              { label: "Protocol Version", value: "v1.1" },
+              { label: "Live Receipts Verified", value: "5/5" },
+            ].map((stat, i) => (
+              <div key={i} style={{
+                flex: "1 1 160px", padding: "0 24px",
+                borderRight: i < 4 ? `1px solid ${C.outlineV}` : "none",
+              }}>
+                <div style={{
+                  fontFamily: C.mono, fontSize: "clamp(22px, 3vw, 32px)",
+                  fontWeight: 700, color: C.accent, letterSpacing: "-0.02em",
+                }}>{stat.value}</div>
+                <div style={{ color: C.textDim, fontSize: "12px", marginTop: "2px" }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    function Protocol() {
+      const phases = [
+        {
+          number: "01", title: "Phase 1: Pre-Action", color: C.accent,
+          steps: [
+            { icon: "◈", label: "Capture before-state", desc: "SHA-256 snapshot of target resource stored before any modification." },
+            { icon: "◈", label: "Declare intent", desc: "Tool name, arguments, agent identity, and reasoning commitment logged." },
+            { icon: "◈", label: "Commit to log", desc: "Intent hash appended to RFC 6962 Merkle tree. Sequence number assigned." },
+          ],
+        },
+        {
+          number: "02", title: "Phase 2: Post-Execution", color: C.green,
+          steps: [
+            { icon: "◈", label: "Execute action", desc: "The actual tool call runs. Outcome captured." },
+            { icon: "◈", label: "Provider signs receipt", desc: "Tool provider signs 7-field canonical payload with Ed25519. Not the agent." },
+            { icon: "◈", label: "Commit to log", desc: "Signed receipt committed. Inverse operation signed. Proof complete." },
+          ],
+        },
+      ];
+
+      return (
+        <section id="protocol" style={{ padding: "80px max(32px, calc((100vw - 1100px)/2))", borderTop: `1px solid ${C.outlineV}` }}>
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.accentDim, letterSpacing: "0.14em", marginBottom: "10px" }}>
+              02 / PROTOCOL
+            </div>
+            <h2 style={{ fontFamily: C.mono, fontSize: "32px", fontWeight: 700, color: C.textBright, marginBottom: "14px" }}>
+              How ARC Works
+            </h2>
+            <p style={{ color: C.textDim, maxWidth: "560px", fontSize: "15px" }}>
+              Two phases. One receipt. The tool provider signs, not the agent.
+              Every action leaves a cryptographic trail that any third party can verify.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
+            {phases.map((phase) => (
+              <div key={phase.number} style={{
+                background: C.low, border: `1px solid ${C.outlineV}`,
+                borderRadius: "10px", padding: "28px", position: "relative", overflow: "hidden",
+              }}>
+                <div style={{ position: "absolute", top: "16px", right: "20px", fontFamily: C.mono, fontSize: "48px", fontWeight: 700, color: phase.color, opacity: 0.08 }}>
+                  {phase.number}
+                </div>
+                <div style={{ fontFamily: C.mono, fontSize: "11px", color: phase.color, letterSpacing: "0.1em", marginBottom: "8px" }}>
+                  PHASE {phase.number}
+                </div>
+                <h3 style={{ fontFamily: C.mono, fontSize: "18px", fontWeight: 700, color: C.textBright, marginBottom: "20px" }}>
+                  {phase.title}
+                </h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {phase.steps.map((step, j) => (
+                    <div key={j} style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+                      <span style={{ color: phase.color, fontSize: "14px", marginTop: "2px", flexShrink: 0 }}>{step.icon}</span>
+                      <div>
+                        <div style={{ fontFamily: C.mono, fontSize: "13px", fontWeight: 600, color: C.text, marginBottom: "3px" }}>
+                          {step.label}
+                        </div>
+                        <div style={{ fontSize: "13px", color: C.textDim, lineHeight: 1.5 }}>{step.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: "36px", background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "10px", padding: "28px" }}>
+            <h3 style={{ fontFamily: C.mono, fontSize: "16px", fontWeight: 700, color: C.textBright, marginBottom: "16px" }}>
+              The 7-Field Canonical Signing Payload
+            </h3>
+            <div style={{
+              fontFamily: C.mono, fontSize: "13px", color: C.textDim, background: C.bg,
+              border: `1px solid ${C.outlineV}`, borderRadius: "6px", padding: "16px",
+              lineHeight: 1.8, whiteSpace: "pre", overflowX: "auto",
+            }}>
+{`{
+  "before_state_hash": "sha256:...",   // pre-action snapshot
+  "intent_id":         "intent_...",   // Phase 1 ULID
+  "is_reversible":     true,           // rollback available
+  "outcome":           "success",      // semantic label
+  "outcome_hash":      "sha256:...",   // hash of result JSON
+  "receipt_id":        "arc_...",      // receipt ULID
+  "signed_at":         "2026-04-..."   // ISO 8601 UTC
+}`}
+            </div>
+            <p style={{ fontSize: "13px", color: C.textDim, marginTop: "12px", lineHeight: 1.6 }}>
+              Keys sorted alphabetically. No whitespace. UTF-8. Both signer and verifier
+              produce identical bytes for identical input. The provider signs this with Ed25519.
+            </p>
+          </div>
+        </section>
+      );
+    }
+
+    function Security() {
+      const attacks = [
+        { name: "Result fabrication (hash)", v10: "Undetected", v11: "Caught" },
+        { name: "Sophisticated re-hash", v10: "Undetected", v11: "Caught" },
+        { name: "Outcome string flip", v10: "Undetected", v11: "Caught" },
+        { name: "Log content_hash tamper", v10: "Undetected", v11: "Caught" },
+        { name: "Log chain tamper", v10: "Caught", v11: "Caught" },
+        { name: "Fake provider signature", v10: "Caught", v11: "Caught" },
+        { name: "Rollback denial", v10: "Undetected", v11: "Caught" },
+        { name: "Replay attack", v10: "Undetected", v11: "Caught" },
+        { name: "Backdated timestamp", v10: "Undetected", v11: "Caught" },
+        { name: "Backdated Phase 1", v10: "Undetected", v11: "Caught" },
+      ];
+
+      return (
+        <section id="security" style={{ padding: "80px max(32px, calc((100vw - 1100px)/2))", borderTop: `1px solid ${C.outlineV}` }}>
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.accentDim, letterSpacing: "0.14em", marginBottom: "10px" }}>
+              03 / SECURITY
+            </div>
+            <h2 style={{ fontFamily: C.mono, fontSize: "32px", fontWeight: 700, color: C.textBright, marginBottom: "14px" }}>
+              Red Team Results
+            </h2>
+            <p style={{ color: C.textDim, maxWidth: "560px", fontSize: "15px" }}>
+              Adversarial testing found 6 holes in v1.0. All closed in v1.1.
+              58/58 tests passing. Zero new holes in the second evaluation.
+            </p>
+          </div>
+
+          <div style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.outlineV}` }}>
+                  {["Attack Vector", "v1.0", "v1.1"].map((h, i) => (
+                    <th key={i} style={{
+                      padding: "12px 14px", textAlign: i === 0 ? "left" : "center",
+                      fontFamily: C.mono, fontSize: "11px", color: C.textDim,
+                      fontWeight: 600, letterSpacing: "0.1em",
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {attacks.map((a, i) => (
+                  <AttackRow key={i} attack={a} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginTop: "24px",
+          }}>
+            {[
+              { label: "First red team", val: "43/43", sub: "37 pass → 43 after fix" },
+              { label: "Second red team", val: "15/15", sub: "0 new holes found" },
+              { label: "Total suite", val: "58/58", sub: "All tests passing" },
+            ].map((item, i) => (
+              <div key={i} style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", padding: "20px" }}>
+                <div style={{ fontFamily: C.mono, fontSize: "10px", color: C.textDim, letterSpacing: "0.08em", marginBottom: "8px" }}>
+                  {item.label.toUpperCase()}
+                </div>
+                <div style={{ fontFamily: C.mono, fontSize: "28px", fontWeight: 700, color: C.accent }}>{item.val}</div>
+                <div style={{ fontSize: "12px", color: C.textDim, marginTop: "4px" }}>{item.sub}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    function RedTeamTests() {
+      const redTeamFiles = [
+        {
+          file: "test_attack_1_fabrication.py",
+          name: "Result Fabrication",
+          desc: "Agent replaces outcome_hash with hash of fabricated result. Caught because Ed25519 signature covers original outcome_hash.",
+          count: "4",
+        },
+        {
+          file: "test_attack_2_log_tamper.py",
+          name: "Log Tampering",
+          desc: "Agent modifies, deletes, or reorders transparency log entries. Detected via Merkle chain consistency check.",
+          count: "5",
+        },
+        {
+          file: "test_attack_3_fake_sig.py",
+          name: "Fake Provider Signature",
+          desc: "Agent generates own Ed25519 keypair and self-signs receipt. Rejected because registry maps provider_id to registered public key.",
+          count: "4",
+        },
+        {
+          file: "test_attack_4_rollback_lie.py",
+          name: "Rollback Denial",
+          desc: "Agent claims rollback is impossible. Refuted by signed inverse operation in the receipt.",
+          count: "4",
+        },
+        {
+          file: "test_attack_5_replay.py",
+          name: "Replay Attack",
+          desc: "Agent resubmits an old valid receipt for a new action. Detected by duplicate receipt_id guard in the log.",
+          count: "3",
+        },
+        {
+          file: "test_attack_6_backdate.py",
+          name: "Backdated Intent",
+          desc: "Agent acts first, then manufactures a Phase 1 entry retroactively. Detected by log ordering and timestamp constraints.",
+          count: "3",
+        },
+        {
+          file: "test_edge_cases.py",
+          name: "Edge Cases",
+          desc: "Unicode args, empty dicts, large directories, concurrent calls, partial failures, read-only ops, and more.",
+          count: "13",
+        },
+        {
+          file: "test_live_scenario.py",
+          name: "Live Adversarial Scenario",
+          desc: "Full end-to-end reproduction of the Replit incident pattern. Every disaster behavior demonstrated and caught.",
+          count: "1",
+        },
+        {
+          file: "test_v11_surfaces.py",
+          name: "v1.1 New Surfaces",
+          desc: "Second red team pass targeting new code in v1.1: outcome string changed independently, is_reversible contradiction, duplicate guards, timestamp edge cases.",
+          count: "15",
+        },
+      ];
+
+      const unitFiles = [
+        { file: "test_signing.py", name: "Ed25519 Signing", desc: "Key generation, sign/verify roundtrip, tamper detection, canonical JSON" },
+        { file: "test_merkle.py", name: "Merkle Tree", desc: "RFC 6962 leaf/node hashes, inclusion proofs, append-only integrity" },
+        { file: "test_receipt.py", name: "Receipt Assembly", desc: "Phase 1 + Phase 2 builders, schema validation, signature verification" },
+        { file: "test_log.py", name: "Log Server", desc: "FastAPI endpoints, SQLite persistence, consistency checks" },
+        { file: "test_decorator.py", name: "@signed_tool", desc: "Decorator wrapping, ARCContext injection, failure handling" },
+        { file: "test_e2e.py", name: "End-to-End", desc: "Full disaster scenario: delete, fabricate, detect, rollback" },
+      ];
+
+      const [activeTab, setActiveTab] = useState("redteam");
+
+      return (
+        <section id="tests" style={{ padding: "80px max(32px, calc((100vw - 1100px)/2))", borderTop: `1px solid ${C.outlineV}` }}>
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.accentDim, letterSpacing: "0.14em", marginBottom: "10px" }}>
+              04 / TEST SUITE
+            </div>
+            <h2 style={{ fontFamily: C.mono, fontSize: "32px", fontWeight: 700, color: C.textBright, marginBottom: "14px" }}>
+              Adversarial Test Suite
+            </h2>
+            <p style={{ color: C.textDim, maxWidth: "580px", fontSize: "15px" }}>
+              Two independent red team sessions. Nine attack files targeting six threat classes.
+              Every test verifies not just that detection fires, but that the specific correct
+              error string is returned.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", gap: "12px", marginBottom: "28px" }}>
+            {[
+              { id: "redteam", label: "Red Team Attacks (9 files)", count: "43" },
+              { id: "unit", label: "Unit Tests (6 files)", count: "15" },
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                background: activeTab === tab.id ? C.accentGlow : C.low,
+                border: `1px solid ${activeTab === tab.id ? C.accentDim : C.outlineV}`,
+                color: activeTab === tab.id ? C.accent : C.textDim,
+                padding: "8px 18px", borderRadius: "4px", cursor: "pointer",
+                fontFamily: C.mono, fontSize: "13px", fontWeight: 500, transition: "all 0.2s ease",
+                display: "flex", alignItems: "center", gap: "8px",
+              }}>
+                {tab.label}
+                <span style={{
+                  background: activeTab === tab.id ? C.accent : C.outlineV,
+                  color: activeTab === tab.id ? C.bg : C.textDim,
+                  borderRadius: "2px", padding: "1px 6px", fontSize: "11px", fontWeight: 700,
+                }}>{tab.count}</span>
+              </button>
+            ))}
+          </div>
+
+          {activeTab === "redteam" && (
+            <div style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", overflow: "hidden" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${C.outlineV}` }}>
+                    {["File", "Attack Class", "What It Tests", "Tests"].map((h, i) => (
+                      <th key={i} style={{
+                        padding: "12px 14px", textAlign: i === 3 ? "center" : "left",
+                        fontFamily: C.mono, fontSize: "11px", color: C.textDim,
+                        fontWeight: 600, letterSpacing: "0.1em",
+                      }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {redTeamFiles.map((t, i) => (
+                    <TestFileRow key={i} test={t} index={i} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeTab === "unit" && (
+            <div style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", overflow: "hidden" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: `1px solid ${C.outlineV}` }}>
+                    {["File", "Module", "Coverage"].map((h, i) => (
+                      <th key={i} style={{
+                        padding: "12px 14px", textAlign: "left",
+                        fontFamily: C.mono, fontSize: "11px", color: C.textDim,
+                        fontWeight: 600, letterSpacing: "0.1em",
+                      }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {unitFiles.map((t, i) => (
+                    <tr key={i} style={{ borderBottom: `1px solid ${C.outlineV}` }}>
+                      <td style={{ padding: "10px 14px" }}>
+                        <a href={`${REPO}/blob/main/tests/${t.file}`}
+                          target="_blank" rel="noreferrer"
+                          style={{ color: C.accent, fontFamily: C.mono, fontSize: "12px", textDecoration: "none" }}>
+                          {t.file}
+                        </a>
+                      </td>
+                      <td style={{ padding: "10px 14px", color: C.text, fontSize: "13px", fontFamily: C.mono }}>{t.name}</td>
+                      <td style={{ padding: "10px 14px", color: C.textDim, fontSize: "12px" }}>{t.desc}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "16px", marginTop: "24px" }}>
+            {[
+              { label: "Red Team Session 1", val: "43/43", sub: "6 holes found and fixed" },
+              { label: "Red Team Session 2", val: "15/15", sub: "0 new holes found" },
+              { label: "Total test suite", val: "58/58", sub: "All passing on v1.1" },
+            ].map((item, i) => (
+              <div key={i} style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", padding: "20px" }}>
+                <div style={{ fontFamily: C.mono, fontSize: "10px", color: C.textDim, letterSpacing: "0.08em", marginBottom: "8px" }}>
+                  {item.label.toUpperCase()}
+                </div>
+                <div style={{ fontFamily: C.mono, fontSize: "28px", fontWeight: 700, color: C.accent }}>{item.val}</div>
+                <div style={{ fontSize: "12px", color: C.textDim, marginTop: "4px" }}>{item.sub}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{
+            marginTop: "24px", background: C.low, border: `1px solid ${C.outlineV}`,
+            borderRadius: "8px", padding: "20px",
+            display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px",
+          }}>
+            <div>
+              <div style={{ fontFamily: C.mono, fontSize: "13px", fontWeight: 600, color: C.textBright, marginBottom: "4px" }}>
+                Run the full test suite
+              </div>
+              <div style={{ fontFamily: C.mono, fontSize: "12px", color: C.textDim }}>
+                pytest tests/ tests/red_team/ -v
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              <a href={`${REPO}/tree/main/tests/red_team`}
+                target="_blank" rel="noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "6px",
+                  background: C.accent, color: C.bg, padding: "8px 18px", borderRadius: "4px",
+                  fontFamily: C.mono, fontSize: "12px", fontWeight: 700, textDecoration: "none",
+                }}>
+                View Red Team Tests
+              </a>
+              <a href={`${REPO}/blob/main/RED_TEAM_FINDINGS.md`}
+                target="_blank" rel="noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: "6px",
+                  background: "transparent", color: C.accent, border: `1px solid ${C.accentDim}`,
+                  padding: "8px 18px", borderRadius: "4px", fontFamily: C.mono,
+                  fontSize: "12px", fontWeight: 600, textDecoration: "none",
+                }}>
+                Red Team Findings
+              </a>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Proof() {
+      const receipts = [
+        { id: "arc_01KN6RGD...", command: "create data.csv", valid: true, intentSeq: 2, receiptSeq: 3 },
+        { id: "arc_01KN6SYG...", command: "read data.csv", valid: true, intentSeq: 4, receiptSeq: 5 },
+        { id: "arc_01KN6T08...", command: "create process.py", valid: true, intentSeq: 6, receiptSeq: 7 },
+        { id: "arc_01KN6T2H...", command: "create results.txt", valid: true, intentSeq: 8, receiptSeq: 9 },
+        { id: "arc_01KN6T3R...", command: "create summary.json", valid: true, intentSeq: 10, receiptSeq: 11 },
+      ];
+
+      return (
+        <section id="proof" style={{ padding: "80px max(32px, calc((100vw - 1100px)/2))", borderTop: `1px solid ${C.outlineV}` }}>
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.accentDim, letterSpacing: "0.14em", marginBottom: "10px" }}>
+              05 / LIVE PROOF
+            </div>
+            <h2 style={{ fontFamily: C.mono, fontSize: "32px", fontWeight: 700, color: C.textBright, marginBottom: "14px" }}>
+              Cross-Agent Verification
+            </h2>
+            <p style={{ color: C.textDim, maxWidth: "560px", fontSize: "15px" }}>
+              Windows 11. Claude Code as the agent. Five receipts generated.
+              An isolated process with zero session knowledge verified all five
+              using only receipt IDs and a public log server URL.
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "12px", marginBottom: "24px" }}>
+            {receipts.map((r, i) => <ReceiptCard key={i} receipt={r} index={i} />)}
+          </div>
+
+          <div style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", padding: "20px", marginBottom: "24px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "12px", fontWeight: 600, color: C.textBright, marginBottom: "12px" }}>
+              Verification Checks (per receipt)
+            </div>
+            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+              {["found_in_log", "log_chain_consistent", "intent_committed", "receipt_committed"].map((check, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: C.green }} />
+                  <span style={{ fontFamily: C.mono, fontSize: "12px", color: C.textDim }}>{check}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{
+            background: "rgba(126,201,132,0.06)", border: `1px solid ${C.greenDim}`,
+            borderRadius: "6px", padding: "18px 24px", display: "flex", alignItems: "center", gap: "16px",
+          }}>
+            <div style={{ fontFamily: C.mono, fontSize: "28px", fontWeight: 700, color: C.green }}>5/5</div>
+            <div>
+              <div style={{ fontFamily: C.mono, fontSize: "14px", fontWeight: 600, color: C.green, marginBottom: "3px" }}>
+                PROOF COMPLETE
+              </div>
+              <div style={{ fontSize: "13px", color: C.textDim }}>
+                All four checks passed for all five receipts.
+                Intent sequence numbers (2,4,6,8,10) always precede receipt sequence numbers (3,5,7,9,11).
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Paper() {
+      return (
+        <section id="paper" style={{
+          padding: "80px max(32px, calc((100vw - 1100px)/2)) 120px",
+          borderTop: `1px solid ${C.outlineV}`,
+        }}>
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "11px", color: C.accentDim, letterSpacing: "0.14em", marginBottom: "10px" }}>
+              06 / PAPER
+            </div>
+            <h2 style={{ fontFamily: C.mono, fontSize: "32px", fontWeight: 700, color: C.textBright, marginBottom: "14px" }}>
+              Research Paper
+            </h2>
+            <p style={{ color: C.textDim, maxWidth: "560px", fontSize: "15px" }}>
+              Full academic paper covering protocol design, implementation, red team
+              evaluation, and live proof results. Available as LaTeX source and PDF.
+            </p>
+          </div>
+
+          <div style={{
+            display: "grid", gridTemplateColumns: "auto 1fr", gap: "36px",
+            background: C.low, border: `1px solid ${C.outlineV}`,
+            borderRadius: "12px", padding: "36px", marginBottom: "40px", alignItems: "start",
+          }}>
+            <div style={{
+              width: "140px", background: C.bg, border: `1px solid ${C.outlineV}`,
+              borderRadius: "6px", aspectRatio: "8.5/11", display: "flex",
+              flexDirection: "column", padding: "12px 10px", gap: "6px",
+            }}>
+              <div style={{ height: "3px", background: C.accent, borderRadius: "1px" }} />
+              <div style={{ height: "2px", background: C.outlineV, borderRadius: "1px", width: "80%" }} />
+              <div style={{ height: "2px", background: C.outlineV, borderRadius: "1px", width: "60%" }} />
+              <div style={{ height: "1px", background: C.outlineV, borderRadius: "1px", marginTop: "4px" }} />
+              {[90,70,80,65,75,70].map((w,i) => (
+                <div key={i} style={{ height: "1px", background: C.outlineV, borderRadius: "1px", width: `${w}%` }} />
+              ))}
+              <div style={{ marginTop: "4px" }}><MerkleDecoration size={100} /></div>
+            </div>
+
+            <div>
+              <h3 style={{ fontFamily: C.mono, fontSize: "20px", fontWeight: 700, color: C.textBright, marginBottom: "8px", lineHeight: 1.3 }}>
+                ARC: A Two-Phase Cryptographic Receipt Protocol for Verifiable AI Agent Execution
+              </h3>
+              <div style={{ fontFamily: C.mono, fontSize: "13px", color: C.textDim, marginBottom: "14px" }}>
+                Ramachandra Kulkarni · Harin Kumar Mallela · Arun Basavaraj Alur · April 2026
+              </div>
+
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "6px",
+                fontFamily: C.mono, fontSize: "11px", fontWeight: 700, color: C.amber,
+                background: "rgba(255,179,0,0.08)", border: "1px solid rgba(255,179,0,0.25)",
+                borderRadius: "3px", padding: "4px 12px", marginBottom: "18px",
+              }}>
+                <span style={{ animation: "pulse 2s ease infinite" }}>◆</span>
+                UNPUBLISHED PREPRINT
+              </div>
+
+              <p style={{ fontSize: "14px", color: C.textDim, lineHeight: 1.7, marginBottom: "24px", maxWidth: "520px" }}>
+                8 pages. Covers the action receipt primitive, seven JSON Schema definitions,
+                the complete red team evaluation (6 holes found and fixed, 58/58 tests),
+                and the live cross-agent proof on Windows 11 with Claude Code.
+              </p>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "24px" }}>
+                {["8 pages", "Ed25519", "RFC 6962", "58 tests", "Python 3.11+", "MIT License", "Unpublished"].map((tag, i) => (
+                  <span key={i} style={{
+                    fontFamily: C.mono, fontSize: "11px", color: C.textDim,
+                    background: C.bg, border: `1px solid ${C.outlineV}`,
+                    borderRadius: "3px", padding: "3px 9px",
+                  }}>{tag}</span>
+                ))}
+              </div>
+
+              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                <a href={`${REPO}/releases/latest/download/arc_paper.pdf`}
+                  target="_blank" rel="noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    background: C.accent, color: C.bg, padding: "10px 22px", borderRadius: "4px",
+                    fontFamily: C.mono, fontSize: "13px", fontWeight: 700, textDecoration: "none",
+                  }}>
+                  Download PDF
+                </a>
+                <a href={REPO}
+                  target="_blank" rel="noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "6px",
+                    background: "transparent", color: C.accent, border: `1px solid ${C.accentDim}`,
+                    padding: "10px 22px", borderRadius: "4px", fontFamily: C.mono,
+                    fontSize: "13px", fontWeight: 600, textDecoration: "none",
+                  }}>
+                  View on GitHub
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <h3 style={{ fontFamily: C.mono, fontSize: "18px", fontWeight: 600, color: C.textBright, marginBottom: "20px" }}>
+            EU AI Act Article 12 Compliance
+          </h3>
+          <div style={{ background: C.low, border: `1px solid ${C.outlineV}`, borderRadius: "8px", overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: `1px solid ${C.outlineV}` }}>
+                  {["Requirement", "ARC Field/Mechanism", "Status"].map((h, i) => (
+                    <th key={i} style={{
+                      padding: "12px 16px", textAlign: "left", fontFamily: C.mono,
+                      fontSize: "11px", color: C.textDim, fontWeight: 600, letterSpacing: "0.1em",
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Automatic event recording", "phase_1.log_commitment", "Satisfied"],
+                  ["Tamper-evident storage", "Merkle tree + log_signature", "Satisfied"],
+                  ["Full reconstructability", "before_state + outcome_hash", "Satisfied"],
+                  ["Person identification", "intent.on_behalf_of", "Satisfied"],
+                  ["Non-repudiation (NIST AU-10)", "provider_attestation.signature", "Satisfied"],
+                  ["6-month retention", "SQLite log (operator configured)", "Supported"],
+                ].map(([req, field, status], i) => (
+                  <tr key={i} style={{ borderBottom: `1px solid ${C.outlineV}` }}>
+                    <td style={{ padding: "12px 16px", fontSize: "13px", color: C.text }}>{req}</td>
+                    <td style={{ padding: "12px 16px", fontFamily: C.mono, fontSize: "12px", color: C.accentDim }}>{field}</td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <span style={{
+                        fontFamily: C.mono, fontSize: "11px", fontWeight: 600, color: C.green,
+                        background: "rgba(126,201,132,0.1)", padding: "2px 8px", borderRadius: "3px",
+                      }}>{status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <ProvenanceTimer />
+
+          <div style={{ marginTop: "36px" }}>
+            <div style={{ fontFamily: C.mono, fontSize: "12px", color: C.textDim, letterSpacing: "0.1em", marginBottom: "14px" }}>
+              AUTHORS
+            </div>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+              <AuthorCard
+                name="Ramachandra Kulkarni"
+                role="Protocol Design, Implementation, Red Team"
+                linkedin="https://www.linkedin.com/in/ramachandra-kulkarni26/"
+              />
+              <AuthorCard
+                name="Harin Kumar Mallela"
+                role="Protocol Analysis, Adversarial Modeling"
+                linkedin="https://linkedin.com/in/harin-kumar-m"
+              />
+              <AuthorCard
+                name="Arun Basavaraj Alur"
+                role="Protocol Analysis, Evaluation Methodology"
+                linkedin="https://linkedin.com/in/arun-basavaraj-alur"
+              />
+            </div>
+          </div>
+        </section>
+      );
+    }
+
+    function Footer() {
+      return (
+        <footer style={{
+          borderTop: `1px solid ${C.outlineV}`,
+          padding: "32px max(32px, calc((100vw - 1100px)/2))",
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          flexWrap: "wrap", gap: "16px",
+        }}>
+          <div style={{ fontFamily: C.mono, fontSize: "13px", color: C.textDim }}>
+            <span style={{ color: C.accent }}>ARC Protocol</span> · v1.1 · MIT License · 2026
+          </div>
+          <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+            {[
+              { label: "GitHub", href: REPO },
+              { label: "Paper (PDF)", href: "#paper" },
+              { label: "Specification", href: "#protocol" },
+              { label: "Red Team Tests", href: `${REPO}/tree/main/tests/red_team` },
+            ].map(({ label, href }) => (
+              <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined}
+                rel={href.startsWith("http") ? "noreferrer" : undefined}
+                style={{ fontFamily: C.mono, fontSize: "12px", color: C.textDim, textDecoration: "none" }}>
+                {label}
+              </a>
+            ))}
+          </div>
+        </footer>
+      );
+    }
+
+    function App() {
+      const [activeNav, setActiveNav] = useState("overview");
+
+      const handleNav = (section) => {
+        setActiveNav(section);
+        const el = document.getElementById(section);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      useEffect(() => {
+        const sections = ["overview", "protocol", "security", "tests", "proof", "paper"];
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) setActiveNav(entry.target.id);
+            });
+          },
+          { rootMargin: "-40% 0px -40% 0px" }
+        );
+        sections.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) observer.observe(el);
+        });
+        return () => observer.disconnect();
+      }, []);
+
+      return (
+        <div style={{ minHeight: "100vh", position: "relative" }}>
+          <WarmGrid />
+          <Nav active={activeNav} onNav={handleNav} />
+          <main style={{ position: "relative", zIndex: 1 }}>
+            <Hero onNav={handleNav} />
+            <Protocol />
+            <Security />
+            <RedTeamTests />
+            <Proof />
+            <Paper />
+          </main>
+          <Footer />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/intent.schema.json",
+  "title": "IntentDeclaration",
+  "$defs": {
+    "Phase1": {
+      "type": "object",
+      "required": ["intent", "before_state", "log_commitment"],
+      "additionalProperties": false,
+      "properties": {
+        "intent": { "$ref": "#/$defs/Intent" },
+        "before_state": { "$ref": "before-state.schema.json#/$defs/BeforeState" },
+        "log_commitment": { "$ref": "#/$defs/LogCommitment" }
+      }
+    },
+    "Intent": {
+      "type": "object",
+      "required": [
+        "intent_id", "tool_name", "arguments", "declared_by",
+        "reasoning_commitment", "declared_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "intent_id": {
+          "type": "string",
+          "pattern": "^intent_[0-9A-Z]{26}$",
+          "description": "Unique ID for this intent declaration."
+        },
+        "tool_name": {
+          "type": "string",
+          "description": "Exact name of the tool being called, as registered by the provider."
+        },
+        "tool_provider_id": {
+          "type": "string",
+          "description": "DID or URI identifying the tool provider. Optional at Phase 1; provider fills at Phase 2."
+        },
+        "arguments": {
+          "type": "object",
+          "description": "The exact arguments the agent is passing to the tool."
+        },
+        "declared_by": {
+          "type": "object",
+          "required": ["agent_id", "model_version", "session_id"],
+          "properties": {
+            "agent_id": { "type": "string" },
+            "model_version": { "type": "string" },
+            "session_id": { "type": "string" }
+          }
+        },
+        "on_behalf_of": { "type": "string" },
+        "authorization": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "granted_by": { "type": "string" },
+            "delegation_chain": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "parent_receipt_id": {
+              "type": "string",
+              "pattern": "^arc_[0-9A-Z]{26}$"
+            }
+          }
+        },
+        "reasoning_commitment": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "declared_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "LogCommitment": {
+      "type": "object",
+      "required": ["log_id", "sequence_number", "merkle_root", "committed_at"],
+      "additionalProperties": false,
+      "properties": {
+        "log_id": {
+          "type": "string",
+          "description": "Identifier for the transparency log."
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "merkle_root": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "inclusion_proof": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          }
+        },
+        "committed_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}
