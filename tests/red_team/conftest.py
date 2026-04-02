@@ -3,13 +3,10 @@ Red team fixtures for adversarial ARC protocol testing.
 """
 
 import copy
-import shutil
-from pathlib import Path
 
 import pytest
 
-from arc import ARCContext, ARCInMemoryLog, ARCKeyPair, SnapshotStore, signed_tool
-from arc.log_client import ARCLogError
+from arc import ARCContext, ARCInMemoryLog, ARCKeyPair, SnapshotStore
 from arc.signing import build_signing_payload, canonical_json, sha256_hex
 
 

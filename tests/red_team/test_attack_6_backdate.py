@@ -14,16 +14,13 @@ HOLES FOUND (see RED_TEAM_FINDINGS.md):
 """
 
 import copy
-import shutil
 from pathlib import Path
 
-import pytest
-
-from arc import ARCContext, ARCKeyPair, signed_tool
+from arc import ARCContext, signed_tool
 from arc.ids import new_intent_id, new_receipt_id
-from arc.log_client import ARCInMemoryLog, ARCLogError
+from arc.log_client import ARCLogError
 from arc.receipt import verify_receipt
-from arc.signing import canonical_json, sha256_hex
+from arc.signing import sha256_hex
 
 
 class TestBackdatedIntent:

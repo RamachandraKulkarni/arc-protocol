@@ -10,18 +10,15 @@ Covers four surfaces the original red team session did not test:
 """
 
 import copy
-import shutil
 from pathlib import Path
 
 import pytest
 
-from arc import ARCContext, ARCInMemoryLog, ARCKeyPair, signed_tool
+from arc import ARCContext, signed_tool
 from arc.ids import new_intent_id, new_receipt_id
 from arc.log_client import ARCLogError
-from arc.merkle import MerkleTree
 from arc.receipt import verify_receipt
-from arc.signing import build_signing_payload, canonical_json, sha256_hex
-
+from arc.signing import sha256_hex
 
 # ---------------------------------------------------------------------------
 # Helpers

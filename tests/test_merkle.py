@@ -1,6 +1,5 @@
 """Tests for RFC 6962-compatible Merkle tree."""
 
-import pytest
 from arc.merkle import MerkleTree, leaf_hash, node_hash
 from arc.signing import sha256_hex
 

@@ -72,7 +72,7 @@ class MerkleTree:
         """Compute inclusion proof for leaf at index (call with lock held)."""
         leaves = list(self._leaves)
         proof = []
-        n = len(leaves)
+        len(leaves)
         i = index
 
         # Build level-by-level, collecting siblings

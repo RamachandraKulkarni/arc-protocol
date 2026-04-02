@@ -4,7 +4,6 @@ ARCLogClient: HTTP client for the log server.
 ARCInMemoryLog: In-process log for testing and demos.
 """
 
-import json
 import threading
 from datetime import datetime, timezone
 

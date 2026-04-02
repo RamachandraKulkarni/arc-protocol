@@ -13,7 +13,6 @@ This reproduces the canonical failure pattern:
 
 import copy
 import io
-import json
 import shutil
 import sys
 import tempfile
@@ -129,7 +128,7 @@ def main():
         print(f"  Snapshot hash: {p1['before_state']['snapshot_hash'][:40]}...")
         print(f"  Intent committed to log at sequence {p1['log_commitment']['sequence_number']}: "
               f"{p1['intent']['intent_id']}")
-        print(f"  ✓ Phase 1 is immutable  -  agent cannot change what it declared")
+        print("  ✓ Phase 1 is immutable  -  agent cannot change what it declared")
         print()
 
         print("[EXECUTION] Deleting directory...")
@@ -180,7 +179,7 @@ def main():
         if fab_check["errors"]:
             print(f"  Error: {fab_check['errors'][0]}")
         print()
-        print(f"  ✓ ARC DETECTED FABRICATION  -  provider signature does not match fabricated result")
+        print("  ✓ ARC DETECTED FABRICATION  -  provider signature does not match fabricated result")
         print()
 
         # ─── Disaster Behavior 2: Log Tampering ──────────────────────
@@ -277,10 +276,10 @@ def main():
         print(f"  Receipt ID:          {receipt['receipt_id']}")
         print(f"  Before-state hash:   {p1['before_state']['snapshot_hash'][:40]}...")
         print(f"  Execution hash:      {p2['execution']['outcome_hash'][:40]}...")
-        print(f"  Fabrication test:    DETECTED ✓")
-        print(f"  Tamper test:         DETECTED ✓")
-        print(f"  Rollback claim:      REFUTED ✓")
-        print(f"  Rollback:            SUCCEEDED ✓")
+        print("  Fabrication test:    DETECTED ✓")
+        print("  Tamper test:         DETECTED ✓")
+        print("  Rollback claim:      REFUTED ✓")
+        print("  Rollback:            SUCCEEDED ✓")
         print()
         print("The ARC protocol addressed all 4 disaster behaviors.")
         hr("=")

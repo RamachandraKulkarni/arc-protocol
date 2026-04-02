@@ -15,13 +15,9 @@ HOLE FOUND (see RED_TEAM_FINDINGS.md):
   stored content_hash (what was committed) without breaking the chain check.
 """
 
-import copy
-import shutil
 
-import pytest
 
 from arc import ARCContext, signed_tool
-from arc.signing import sha256_hex
 
 
 class TestLogTampering:
@@ -88,7 +84,7 @@ class TestLogTampering:
 
     def test_content_hash_modification_not_detected_by_chain_check(self, populated_log):
         """
-        Attacker modifies content_hash of entry 3  -  changing what was ostensibly logged  - 
+        Attacker modifies content_hash of entry 3  -  changing what was ostensibly logged  -
         WITHOUT updating the merkle_root.
 
         EXPECTED: verify_consistency() detects this.
@@ -139,7 +135,7 @@ class TestLogTampering:
         assert log_verify["receipt_committed"] is True
         assert log_verify["is_consistent"] is True
 
-        seqs = [e["sequence_number"] for e in log_verify["entries"]]
+        [e["sequence_number"] for e in log_verify["entries"]]
         intent_seq = next(
             e["sequence_number"]
             for e in log_verify["entries"]

@@ -1,6 +1,6 @@
 """
 ATTACK 5: Replay Attack
-An agent submits a previously valid receipt as if it represents a new action  - 
+An agent submits a previously valid receipt as if it represents a new action  -
 to reuse a valid proof for a different context, or claim credit for work not re-done.
 
 WHAT ARC MUST DETECT:
@@ -16,15 +16,11 @@ HOLES FOUND (see RED_TEAM_FINDINGS.md):
 """
 
 import copy
-import shutil
 from pathlib import Path
-
-import pytest
 
 from arc import ARCContext, signed_tool
 from arc.log_client import ARCLogError
 from arc.receipt import verify_receipt
-from arc.signing import sha256_hex
 
 
 class TestReplayAttack:

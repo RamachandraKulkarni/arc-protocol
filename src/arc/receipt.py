@@ -6,10 +6,10 @@ Phase 2: attest_execution (post-execution, signed, committed to log)
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from arc.ids import new_receipt_id, new_intent_id
+from arc.ids import new_intent_id, new_receipt_id
 from arc.signing import (
     ARCKeyPair,
     build_signing_payload,
@@ -353,7 +353,7 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
             else:
                 checks["inverse_signature_valid"] = None
         elif inverse and inv_sig and not is_reversible_flag:
-            # Case 2: is_reversible=False but inverse_signature is still present  - 
+            # Case 2: is_reversible=False but inverse_signature is still present  -
             # structurally inconsistent. Provider signed a reversible inverse op, but
             # the receipt claims non-reversible. This is a tampered receipt.
             checks["inverse_signature_valid"] = False

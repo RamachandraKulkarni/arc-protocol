@@ -1,6 +1,5 @@
 """Tests for @signed_tool decorator and ARCContext."""
 
-import os
 from pathlib import Path
 
 import pytest
@@ -80,7 +79,6 @@ def test_decorator_on_behalf_of(temp_dir):
 
 
 def test_decorator_dict_resource(ctx):
-    data = {"users": [{"id": 1, "name": "Alice"}]}
 
     @signed_tool(resource="dict", resource_uri_from_args="key")
     def update_data(key: str, ctx: ARCContext) -> dict:

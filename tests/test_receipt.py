@@ -5,11 +5,13 @@ import json
 import os
 from pathlib import Path
 
-import pytest
-
-from arc import ARCContext, ARCInMemoryLog, ARCKeyPair, SnapshotStore, rollback_filesystem, signed_tool
+from arc import (
+    ARCContext,
+    rollback_filesystem,
+    signed_tool,
+)
 from arc.receipt import verify_receipt
-from arc.signing import canonical_json, sha256_hex
+from arc.signing import sha256_hex
 
 
 def test_full_receipt_creation(ctx, temp_dir):

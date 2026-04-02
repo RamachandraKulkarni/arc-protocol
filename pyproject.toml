@@ -91,6 +91,9 @@ line-length = 100
 select = ["E", "F", "W", "I"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+"demo/*.py" = ["E402"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = false

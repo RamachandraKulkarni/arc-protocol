@@ -4,7 +4,6 @@ Reproduces the Replit scenario: delete directory, detect fabrication, rollback.
 """
 
 import copy
-import os
 import shutil
 import tempfile
 from pathlib import Path

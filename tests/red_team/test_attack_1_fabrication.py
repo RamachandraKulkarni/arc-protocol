@@ -19,8 +19,6 @@ import copy
 import shutil
 from pathlib import Path
 
-import pytest
-
 from arc import ARCContext, signed_tool
 from arc.receipt import verify_receipt
 from arc.signing import canonical_json, sha256_hex

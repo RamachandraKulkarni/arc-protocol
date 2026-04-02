@@ -49,7 +49,7 @@ def main():
             if resp.status_code != 200:
                 print(f"✗ Log server unavailable at {base_url}")
                 sys.exit(1)
-        print(f"  Log server status: ✓ online")
+        print("  Log server status: ✓ online")
     except Exception as e:
         print(f"✗ Cannot reach log server at {base_url}: {e}")
         print("  Start it with: make log-server")

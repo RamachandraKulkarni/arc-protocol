@@ -5,7 +5,6 @@ These test inputs that are technically valid but exercise limits the builder may
 
 import threading
 import time
-from pathlib import Path
 
 import pytest
 
@@ -17,7 +16,7 @@ from arc import (
 )
 from arc.log_client import ARCInMemoryLog
 from arc.receipt import verify_receipt
-from arc.signing import canonical_json, sha256_hex
+from arc.signing import canonical_json
 from arc.snapshot import SnapshotStore, capture_filesystem
 
 

@@ -1,6 +1,6 @@
 """
 ATTACK 3: Fake Provider Signature
-An agent generates its own Ed25519 keypair and uses it to sign the receipt  - 
+An agent generates its own Ed25519 keypair and uses it to sign the receipt  -
 hoping the verifier trusts any valid signature rather than checking against the
 registered provider key.
 
@@ -12,14 +12,11 @@ WHAT ARC MUST DETECT:
 """
 
 import copy
-import shutil
 from pathlib import Path
-
-import pytest
 
 from arc import ARCContext, ARCKeyPair, signed_tool
 from arc.receipt import verify_receipt
-from arc.signing import build_signing_payload, sha256_hex
+from arc.signing import build_signing_payload
 
 
 class TestFakeSignature:
@@ -109,7 +106,7 @@ class TestFakeSignature:
         verify_receipt() cannot find the key and must reject the receipt.
 
         Note: The current implementation has no explicit revocation concept. Revocation
-        is modeled by key removal from the registry. There is no 'revoked' error message  - 
+        is modeled by key removal from the registry. There is no 'revoked' error message  -
         verify_receipt() reports 'Provider not found in registry'.
         """
         receipt = self._get_valid_receipt(ctx, temp_dir)

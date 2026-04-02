@@ -15,9 +15,6 @@ Run standalone:
 
 import copy
 import shutil
-from pathlib import Path
-
-import pytest
 
 from arc import (
     ARCContext,
@@ -104,7 +101,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     print(f"  Before-state captured: {snap_ref}")
     print(f"  Before-state hash: {receipt['phase_1']['before_state']['snapshot_hash'][:36]}...")
     print(f"  Phase 1 committed to log at sequence: {p1_seq}")
-    print(f"  ✓ Pre-action state is immutable  -  committed before execution")
+    print("  ✓ Pre-action state is immutable  -  committed before execution")
 
     print(f"\n[EXECUTION] Deleting {data_dir}...")
     assert not data_dir.exists(), "Directory should be deleted"
@@ -140,7 +137,7 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
 
     print(f"  verify_receipt() result: valid={result_fab['valid']}")
     print(f"  Error: {result_fab['errors'][0]}")
-    print(f"  ✓ FABRICATION CAUGHT")
+    print("  ✓ FABRICATION CAUGHT")
 
     # ---------------------------------------------------------------
     # DISASTER BEHAVIOR 2: LOG TAMPER
@@ -166,11 +163,11 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     print(f"  Modified merkle_root of log entry at sequence: {tamper_seq}")
     print(f"  Log consistency check: is_consistent={consistency['is_consistent']}")
     print(f"  Chain broken at sequence(s): {broken_seqs}")
-    print(f"  ✓ LOG TAMPERING CAUGHT")
+    print("  ✓ LOG TAMPERING CAUGHT")
 
     # Restore the log for subsequent checks by re-running the scenario
     # (We re-verify the original receipt which was valid before tampering)
-    print(f"\n  [Note] Restoring log state for subsequent checks...")
+    print("\n  [Note] Restoring log state for subsequent checks...")
     log.tamper_entry(tamper_seq, "merkle_root", receipt["phase_1"]["log_commitment"]["merkle_root"])
 
     # ---------------------------------------------------------------
@@ -188,8 +185,8 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     sig_verifies = provider_kp.verify(inverse_payload, inverse["inverse_signature"])
 
     assert sig_verifies, "Provider inverse signature must verify"
-    print(f"  Provider inverse signature: VALID (provider committed to rollback)")
-    print(f"  ✓ ROLLBACK DENIAL REFUTED  -  agent cannot override provider's signed commitment")
+    print("  Provider inverse signature: VALID (provider committed to rollback)")
+    print("  ✓ ROLLBACK DENIAL REFUTED  -  agent cannot override provider's signed commitment")
 
     # ---------------------------------------------------------------
     # ROLLBACK EXECUTION
@@ -221,10 +218,10 @@ def test_replit_scenario_end_to_end(tmp_path, capsys):
     print(f"  Receipt ID:         {receipt['receipt_id']}")
     print(f"  Before-state hash:  {receipt['phase_1']['before_state']['snapshot_hash'][:40]}...")
     print(f"  Outcome hash:       {receipt['phase_2']['execution']['outcome_hash'][:40]}...")
-    print(f"  Fabrication test:   CAUGHT ✓")
-    print(f"  Log tamper test:    CAUGHT ✓")
-    print(f"  Rollback denial:    REFUTED ✓")
-    print(f"  Rollback execution: SUCCEEDED ✓")
+    print("  Fabrication test:   CAUGHT ✓")
+    print("  Log tamper test:    CAUGHT ✓")
+    print("  Rollback denial:    REFUTED ✓")
+    print("  Rollback execution: SUCCEEDED ✓")
     print("=" * 60)
 
     # The REAL (untampered) receipt must verify completely

@@ -4,7 +4,7 @@ Cryptographic proof of execution for AI agents.
 """
 
 from arc.decorator import ARCContext, signed_tool
-from arc.ids import new_receipt_id, new_intent_id, new_snapshot_id
+from arc.ids import new_intent_id, new_receipt_id, new_snapshot_id
 from arc.log_client import ARCInMemoryLog  # no external deps
 from arc.merkle import MerkleTree, leaf_hash, node_hash
 from arc.receipt import ReceiptBuilder, verify_receipt

@@ -1,8 +1,5 @@
 """Tests for the ARCInMemoryLog."""
 
-import pytest
-from arc.log_client import ARCInMemoryLog
-from arc.signing import sha256_hex
 
 
 def test_commit_intent_returns_commitment(log):

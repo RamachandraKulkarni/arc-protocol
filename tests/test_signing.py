@@ -1,7 +1,6 @@
 """Tests for Ed25519 signing, verification, and canonical JSON."""
 
-import pytest
-from arc.signing import ARCKeyPair, canonical_json, sha256_hex, build_signing_payload
+from arc.signing import ARCKeyPair, build_signing_payload, canonical_json, sha256_hex
 
 
 def test_keypair_generation_produces_valid_keys(provider_keypair):
