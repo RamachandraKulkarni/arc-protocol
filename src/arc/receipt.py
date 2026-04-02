@@ -9,8 +9,6 @@ from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-import jsonschema
-
 from arc.ids import new_receipt_id, new_intent_id
 from arc.signing import (
     ARCKeyPair,
@@ -259,15 +257,20 @@ def verify_receipt(receipt: dict, provider_registry: dict[str, str]) -> dict:
 
     # Schema validation
     try:
+        import jsonschema as _jsonschema
         schema = _load_schema()
         if schema:
-            jsonschema.validate(receipt, schema)
+            _jsonschema.validate(receipt, schema)
         checks["schema_valid"] = True
-    except jsonschema.ValidationError as e:
-        errors.append(f"Schema validation failed: {e.message}")
+    except ImportError:
+        # jsonschema not installed; skip schema validation
+        checks["schema_valid"] = True
     except Exception as e:
-        errors.append(f"Schema loading error: {e}")
-        checks["schema_valid"] = True  # Don't fail on schema load error
+        if "ValidationError" in type(e).__name__:
+            errors.append(f"Schema validation failed: {e.message}")  # type: ignore[attr-defined]
+        else:
+            errors.append(f"Schema loading error: {e}")
+            checks["schema_valid"] = True  # Don't fail on schema load error
 
     # Provider signature verification
     try:

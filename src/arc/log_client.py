@@ -8,8 +8,6 @@ import json
 import threading
 from datetime import datetime, timezone
 
-import httpx
-
 from arc.ids import new_log_entry_id
 from arc.merkle import MerkleTree
 from arc.signing import ARCKeyPair, canonical_json, sha256_hex
@@ -23,6 +21,17 @@ class ARCLogError(Exception):
     """Raised on HTTP errors from the log server."""
 
 
+def _require_httpx():
+    try:
+        import httpx
+        return httpx
+    except ImportError:
+        raise ImportError(
+            "httpx is required for ARCLogClient. "
+            "Install it with: pip install arc-protocol[client]"
+        ) from None
+
+
 class ARCLogClient:
     """
     HTTP client for the ARC transparency log server.
@@ -30,10 +39,12 @@ class ARCLogClient:
     """
 
     def __init__(self, base_url: str) -> None:
+        _require_httpx()  # fail fast at construction time
         self.base_url = base_url.rstrip("/")
 
     def commit_intent(self, intent_dict: dict, receipt_id: str) -> dict:
         """Commit a Phase 1 intent to the log. Returns LogCommitment dict."""
+        httpx = _require_httpx()
         with httpx.Client(timeout=10.0) as client:
             resp = client.post(
                 f"{self.base_url}/v1/log/intent",
@@ -45,6 +56,7 @@ class ARCLogClient:
 
     def commit_receipt(self, receipt_dict: dict) -> dict:
         """Commit a complete receipt to the log. Returns LogCommitment dict."""
+        httpx = _require_httpx()
         with httpx.Client(timeout=10.0) as client:
             resp = client.post(
                 f"{self.base_url}/v1/log/receipt",
@@ -56,6 +68,7 @@ class ARCLogClient:
 
     def verify(self, receipt_id: str) -> dict:
         """Query log entries for a receipt_id."""
+        httpx = _require_httpx()
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/v1/log/verify/{receipt_id}")
             if resp.status_code != 200:
@@ -64,6 +77,7 @@ class ARCLogClient:
 
     def get_entry(self, sequence_number: int) -> dict:
         """Get a log entry by sequence number."""
+        httpx = _require_httpx()
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/v1/log/entries?from_seq={sequence_number}&limit=1")
             if resp.status_code != 200:
@@ -75,6 +89,7 @@ class ARCLogClient:
 
     def get_root(self) -> dict:
         """Get current signed tree head."""
+        httpx = _require_httpx()
         with httpx.Client(timeout=10.0) as client:
             resp = client.get(f"{self.base_url}/v1/log/root")
             if resp.status_code != 200:

@@ -140,8 +140,22 @@ success = rollback_filesystem(snap)
 **Install:**
 
 ```bash
+# Core SDK only (fast, lightweight: cryptography + python-ulid)
 pip install arc-protocol
-# or from source:
+
+# With remote log server client (adds httpx)
+pip install arc-protocol[client]
+
+# With FastAPI log server (adds fastapi, uvicorn, pydantic)
+pip install arc-protocol[server]
+
+# With JSON Schema validation (adds jsonschema)
+pip install arc-protocol[validation]
+
+# Everything
+pip install arc-protocol[all]
+
+# From source (development)
 git clone https://github.com/RamachandraKulkarni/arc-protocol.git
 cd arc-protocol && pip install -e ".[dev]"
 ```

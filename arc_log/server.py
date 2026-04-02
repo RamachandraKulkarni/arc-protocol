@@ -8,8 +8,14 @@ import os
 import re
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, HTTPException, Query
-from pydantic import BaseModel
+try:
+    from fastapi import FastAPI, HTTPException, Query
+    from pydantic import BaseModel
+except ImportError:
+    raise ImportError(
+        "FastAPI and pydantic are required for the ARC log server. "
+        "Install them with: pip install arc-protocol[server]"
+    ) from None
 
 from arc.signing import ARCKeyPair, canonical_json, sha256_hex
 from arc_log.storage import LogStorage
