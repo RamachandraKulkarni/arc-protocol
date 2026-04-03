@@ -7,10 +7,10 @@ Usage:
     python arc_tests.py
 """
 
-import sys
-import os
 import copy
+import os
 import shutil
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -66,12 +66,16 @@ def section_result(label):
 header(1, "Imports and version")
 
 try:
-    from arc import (
-        ARCKeyPair, ARCInMemoryLog, SnapshotStore,
-        ReceiptBuilder, verify_receipt, signed_tool, ARCContext,
-        sha256_hex,
-    )
     import arc
+    from arc import (
+        ARCContext,
+        ARCInMemoryLog,
+        ARCKeyPair,
+        SnapshotStore,
+        sha256_hex,
+        signed_tool,
+        verify_receipt,
+    )
     check("Package importable", True, expected=True)
     check("Version format",     arc.__version__, contains=".")
     check("Version value",      arc.__version__, truthy=True)
@@ -198,8 +202,8 @@ section_result("Full receipt cycle OK")
 # ── Test 4: Replit scenario ────────────────────────────────────────────────
 header(4, "Replit scenario: delete, fabricate, detect, rollback")
 
-from arc.snapshot import rollback_filesystem
 from arc.signing import canonical_json
+from arc.snapshot import rollback_filesystem
 
 kp4 = ARCKeyPair.generate()
 log4 = ARCInMemoryLog()
@@ -300,14 +304,14 @@ section_result("Replit scenario: PASS")
 header(5, "Schema structure and validation")
 
 try:
-    import jsonschema
     from importlib.metadata import version
+
     jsonschema_version = version("jsonschema")
     check("jsonschema installed",   jsonschema_version, truthy=True)
     check("jsonschema version",     jsonschema_version, contains=".")
 except ImportError:
     print(f"  {PASS}  jsonschema not installed — schema validation skipped")
-    print(f"         (install with: pip install jsonschema)")
+    print("         (install with: pip install jsonschema)")
 
 kp5 = ARCKeyPair.generate()
 ctx5 = ARCContext(

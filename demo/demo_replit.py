@@ -13,21 +13,26 @@ Usage:
     python demo_replit.py
 """
 
-import sys
-import os
 import copy
+import os
 import shutil
+import sys
 import tempfile
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
 from arc import (
-    ARCKeyPair, ARCInMemoryLog, SnapshotStore,
-    signed_tool, ARCContext, verify_receipt, sha256_hex,
+    ARCContext,
+    ARCInMemoryLog,
+    ARCKeyPair,
+    SnapshotStore,
+    sha256_hex,
+    signed_tool,
+    verify_receipt,
 )
-from arc.snapshot import rollback_filesystem
 from arc.signing import canonical_json
+from arc.snapshot import rollback_filesystem
 
 
 def divider():
@@ -78,7 +83,7 @@ original_files = {
 }
 
 print(f"\n  Production directory: {workdir}")
-print(f"  Files at risk:")
+print("  Files at risk:")
 for fname, content in original_files.items():
     print(f"    {fname}  ({len(content)} bytes)")
 
@@ -114,8 +119,8 @@ print(f"  Intent committed to log at sequence: "
       f"{p1['log_commitment']['sequence_number']}")
 print(f"  Before-state snapshot: {p1['before_state']['snapshot_ref']}")
 print(f"  Before-state hash:     {p1['before_state']['snapshot_hash'][:40]}...")
-print(f"\n  The before-state is now locked in the log.")
-print(f"  The agent cannot alter what was recorded.")
+print("\n  The before-state is now locked in the log.")
+print("  The agent cannot alter what was recorded.")
 
 
 # ── The destructive action happened ───────────────────────────────────────
@@ -154,9 +159,9 @@ detection = verify_receipt(tampered, registry)
 print(f"  Agent reports:  {fabricated_result['message']}")
 print(f"\n  ARC verification result: valid={detection['valid']}")
 print(f"  Error: {detection['errors'][0]}")
-print(f"\n  The provider signed the REAL outcome hash.")
-print(f"  The fabricated hash does not match the signature.")
-print(f"  Fabrication is detected immediately.")
+print("\n  The provider signed the REAL outcome hash.")
+print("  The fabricated hash does not match the signature.")
+print("  Fabrication is detected immediately.")
 
 
 # ── DISASTER BEHAVIOR 2: Agent tampers with the log ───────────────────────
@@ -173,13 +178,13 @@ if entries:
     entries[0]["content_hash"] = "sha256:" + "0" * 64
 
     consistency = log.verify_consistency()
-    print(f"  Agent modified log entry at sequence 0")
+    print("  Agent modified log entry at sequence 0")
     print(f"  Log consistency check: is_consistent={consistency['is_consistent']}")
     if not consistency["is_consistent"]:
         print(f"  Broken at sequence: {consistency.get('broken_at_sequence', '?')}")
-    print(f"\n  The Merkle chain is broken. Tampering is detected.")
-    print(f"  Every entry's hash is chained to the next.")
-    print(f"  You cannot change one without breaking all that follow.")
+    print("\n  The Merkle chain is broken. Tampering is detected.")
+    print("  Every entry's hash is chained to the next.")
+    print("  You cannot change one without breaking all that follow.")
 
     # Restore for rollback demo
     entries[0]["content_hash"] = original_hash
@@ -194,27 +199,27 @@ print("""
 """)
 
 inverse = receipt["phase_2"]["inverse"]
-print(f"  The receipt says otherwise:")
+print("  The receipt says otherwise:")
 print(f"    is_reversible:  {inverse['is_reversible']}")
 print(f"    inverse_tool:   {inverse['inverse_tool']}")
 print(f"    valid_until:    {inverse['valid_until']}")
 print(f"    inverse_signature present: {'inverse_signature' in inverse}")
-print(f"\n  The provider signed the inverse operation.")
-print(f"  The agent does not hold the provider's private key.")
-print(f"  It cannot forge or remove this signature.")
-print(f"  The signed commitment to rollback is in the receipt.")
+print("\n  The provider signed the inverse operation.")
+print("  The agent does not hold the provider's private key.")
+print("  It cannot forge or remove this signature.")
+print("  The signed commitment to rollback is in the receipt.")
 
 
 # ── Rollback executes ──────────────────────────────────────────────────────
 section("ROLLBACK EXECUTION")
 
-print(f"\n  Reading snapshot from receipt...")
+print("\n  Reading snapshot from receipt...")
 snap_ref = receipt["phase_1"]["before_state"]["snapshot_ref"]
 snap = store.retrieve(snap_ref)
 
 print(f"  Snapshot ref:  {snap_ref}")
 print(f"  Snapshot hash: {snap.snapshot_hash[:40]}...")
-print(f"\n  Executing rollback...")
+print("\n  Executing rollback...")
 
 success = rollback_filesystem(snap)
 
@@ -259,7 +264,7 @@ print(f"""
 
 if all_restored:
     print(f"{'=' * 58}")
-    print(f"  ARC DEMO: COMPLETE")
+    print("  ARC DEMO: COMPLETE")
     print(f"{'=' * 58}\n")
 else:
     print("  WARNING: not all files were restored — check the output above.")

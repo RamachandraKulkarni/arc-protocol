@@ -13,12 +13,12 @@ Usage:
     python arc_witness.py
 """
 
-import sys
-import os
+import base64
 import copy
 import json
-import base64
+import os
 import shutil
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -64,7 +64,8 @@ def short(s, n=52):
     return s if len(s) <= n else s[:n] + "..."
 
 def bytes_human(n):
-    if n < 1024: return f"{n} B"
+    if n < 1024:
+        return f"{n} B"
     return f"{n/1024:.1f} KB"
 
 
@@ -73,13 +74,18 @@ def bytes_human(n):
 banner("ARC PROTOCOL  FULL WITNESS")
 
 try:
-    from arc import (
-        ARCKeyPair, ARCInMemoryLog, SnapshotStore,
-        signed_tool, ARCContext, verify_receipt, sha256_hex,
-    )
-    from arc.snapshot import rollback_filesystem
-    from arc.signing import canonical_json, build_signing_payload
     import arc
+    from arc import (
+        ARCContext,
+        ARCInMemoryLog,
+        ARCKeyPair,
+        SnapshotStore,
+        sha256_hex,
+        signed_tool,
+        verify_receipt,
+    )
+    from arc.signing import build_signing_payload, canonical_json
+    from arc.snapshot import rollback_filesystem
     ok(f"arc-protocol {arc.__version__} imported")
     ok(f"Python {sys.version.split()[0]}  |  Platform: {sys.platform}")
 except ImportError as e:
@@ -202,7 +208,7 @@ field("session_id",          intent["declared_by"]["session_id"])
 field("on_behalf_of",        intent["on_behalf_of"])
 field("declared_at",         intent["declared_at"])
 field("reasoning_commitment",intent["reasoning_commitment"])
-print(f"\n    arguments:")
+print("\n    arguments:")
 for k, v in intent["arguments"].items():
     subfield(k, short(v))
 
@@ -247,9 +253,9 @@ payload_obj = {
     "receipt_id":        receipt["receipt_id"],
     "signed_at":         p2["provider_attestation"]["signed_at"],
 }
-print(f"\n    canonical_json (sorted keys, no whitespace):")
+print("\n    canonical_json (sorted keys, no whitespace):")
 print(f"    {json.dumps(payload_obj, sort_keys=True, separators=(',',':'))[:W-4]}")
-print(f"\n    sha256 of canonical_json  (this is what gets signed):")
+print("\n    sha256 of canonical_json  (this is what gets signed):")
 print(f"    {signing_payload.decode()}")
 
 section("Provider attestation")
@@ -267,7 +273,7 @@ field("is_reversible",     inv["is_reversible"])
 field("inverse_tool",      inv["inverse_tool"])
 field("valid_until",       inv["valid_until"])
 field("inverse_signature", inv["inverse_signature"][:50] + "...")
-print(f"\n    inverse_arguments:")
+print("\n    inverse_arguments:")
 for k, v in inv["inverse_arguments"].items():
     subfield(k, short(v))
 
