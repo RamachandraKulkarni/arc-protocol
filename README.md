@@ -137,7 +137,7 @@ success = rollback_filesystem(snap)
 
 ```bash
 # Core SDK only (fast, lightweight: cryptography)
-pip install arc-protocol
+pip install arc-protocol --prefer-binary
 
 # With remote log server client (adds httpx)
 pip install arc-protocol[client]
@@ -205,6 +205,104 @@ make log-server  # starts FastAPI server on :8080
 from arc import ARCLogClient
 log = ARCLogClient(base_url="http://localhost:8080")
 ```
+
+---
+
+## Verify Your Installation
+
+After installing, run the standalone test suite to confirm the full protocol
+works correctly on your machine:
+
+```bash
+pip install arc-protocol --prefer-binary
+python arc_tests.py
+```
+
+Expected output:
+
+```
+============================================================
+  ARC PROTOCOL - ALL 88 CHECKS PASSED
+  arc version:  1.1.4
+  Python:       3.13.9
+  Platform:     win32
+  Checks run:   88
+  Checks failed:0
+============================================================
+```
+
+Works on Windows, macOS, and Linux. Python 3.11+. Runs in under 5 seconds.
+
+The test suite covers:
+- Ed25519 keypair generation, signing, and tamper detection
+- Full receipt cycle: Phase 1 intent + Phase 2 attestation + verify_receipt
+- The Replit scenario: real file deletion, fabrication detection, rollback
+- Schema structure: all root fields, phase fields, signature and hash formats
+- Sequence ordering: Phase 1 always before Phase 2, gap always 1
+
+---
+
+## Internal Witness
+
+To see every internal mechanism as it runs -- snapshot file contents,
+exact signing payload, Merkle log entries, fabrication detection, rollback
+file-by-file -- run the witness script:
+
+```bash
+python arc_witness.py
+```
+
+This runs the Replit scenario and prints:
+
+- The snapshot: every file captured, base64 content, sha256, mtime
+- The signing payload: the exact 7-field canonical JSON the provider signed
+- The log entries: both Merkle entries with roots, timestamps, log signatures
+- Merkle consistency: both passes (chain check and content hash leaf integrity)
+- The full receipt JSON
+- Fabrication detection: real hash vs fake hash, which check fails and why
+- Rollback: each file's sha256 before and after, byte-exact match
+
+---
+
+## Live Cross-Agent Witness
+
+To witness a live agent session from the transparency log alone -- zero session
+knowledge, just a log server URL:
+
+**Terminal 1 -- start the log server:**
+
+```bash
+pip install arc-protocol[server] --prefer-binary
+python -m uvicorn arc_log.server:app --host 0.0.0.0 --port 8080
+```
+
+**Terminal 2 -- run your agent session with arc_shell.py:**
+
+```bash
+export ARC_LOG_URL=http://localhost:8080
+export ARC_AGENT_ID=my-agent
+export ARC_SESSION_ID=session-001
+export ARC_ON_BEHALF_OF=user@example.com
+export ARC_RECEIPTS_LOG=./receipts.log
+export ARC_PROVIDER_KEY=./provider.key
+
+python arc_shell.py "your command here"
+```
+
+**Terminal 3 -- witness from zero context:**
+
+```bash
+python live_witness.py
+```
+
+`live_witness.py` reads everything from the public log API. It has zero
+knowledge of the agent session, keypairs, or what commands were run.
+It outputs: all log entries with full details, Merkle chain verification
+link by link, per-receipt verification with Phase 1/2 timestamps and
+sequence gap, and a full summary.
+
+This is exactly how a third-party auditor would verify agent actions
+post-hoc -- receipt IDs and a log URL are all that is required.
 
 ---
 
@@ -329,6 +427,7 @@ make witness
 make demo-basic      # Generate one receipt, verify it, print full JSON
 make demo-disaster   # Replit scenario with narrative output: delete, fabricate, detect, rollback
 make demo-verify RECEIPT_ID=arc_01...  # Third-party verify from receipt ID only (requires log server)
+python demo/demo_replit.py  # Narrative Replit scenario with all three disaster behaviors
 ```
 
 ---
@@ -548,6 +647,9 @@ arc-protocol/
 ├── SECURITY.md                            Vulnerability disclosure policy
 ├── pyproject.toml                         Package metadata and dependencies
 ├── Makefile                               Build, test, demo, and log server targets
+├── arc_tests.py                           88-check standalone test suite (pip install, then run)
+├── arc_witness.py                         Full internal witness: snapshots, signing, Merkle, rollback
+├── live_witness.py                        Live log witness: zero session knowledge, URL only
 │
 ├── schemas/                               JSON Schema draft-2020-12 (the protocol)
 │   ├── action-receipt.schema.json
@@ -591,10 +693,9 @@ arc-protocol/
 │       └── test_v11_surfaces.py           v1.1 new code surface regression
 │
 ├── demo/
-│   ├── arc_tests.py                       Protocol test suite (73 checks, all computed live)
-│   ├── arc_witness.py                     Full witness: exposes all internals of a live execution
 │   ├── demo_basic.py                      Minimal: sign, verify, print receipt
 │   ├── demo_disaster.py                   Replit scenario with narrative output
+│   ├── demo_replit.py                     Narrative: three disaster behaviors
 │   └── demo_verify.py                     Third-party verify from receipt ID
 │
 ├── paper/

@@ -1,4 +1,4 @@
-.PHONY: install test red-team test-all demo-basic demo-disaster demo-verify witness arc-tests log-server lint clean website paper
+.PHONY: install test red-team test-all demo-basic demo-disaster demo-verify demo-replit witness arc-tests verify live-witness log-server lint clean website paper
 
 install:
 	pip install -e ".[dev]"
@@ -24,11 +24,25 @@ demo-basic:
 demo-disaster:
 	python demo/demo_disaster.py
 
-witness:
-	python demo/arc_witness.py
+# Standalone test suite (no pytest required)
+verify:
+	python arc_tests.py
 
+# Internal mechanism witness
+witness:
+	python arc_witness.py
+
+# Standalone test suite (alias)
 arc-tests:
-	python demo/arc_tests.py
+	python arc_tests.py
+
+# Live log witness (requires log server running on :8080)
+live-witness:
+	python live_witness.py
+
+# Narrative Replit scenario demo
+demo-replit:
+	python demo/demo_replit.py
 
 log-server:
 	python -m uvicorn arc_log.server:app --host 0.0.0.0 --port 8080 --reload
