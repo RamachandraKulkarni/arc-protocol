@@ -17,7 +17,7 @@ from arc.snapshot import (
     rollback_filesystem,
 )
 
-__version__ = "1.1.3"
+__version__ = "1.1.4"
 
 
 def __getattr__(name: str):
