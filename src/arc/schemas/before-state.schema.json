@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/before-state.schema.json",
+  "title": "BeforeState",
+  "$defs": {
+    "BeforeState": {
+      "type": "object",
+      "required": ["resource_uri", "resource_type", "snapshot_hash", "captured_at"],
+      "additionalProperties": false,
+      "properties": {
+        "resource_uri": {
+          "type": "string",
+          "description": "URI identifying the resource being acted upon."
+        },
+        "resource_type": {
+          "type": "string",
+          "enum": [
+            "filesystem:file",
+            "filesystem:directory",
+            "database:row",
+            "database:table",
+            "database:collection",
+            "email:message",
+            "email:inbox",
+            "api:response",
+            "memory:key",
+            "memory:namespace",
+            "process:state",
+            "custom"
+          ]
+        },
+        "snapshot_ref": {
+          "type": "string",
+          "pattern": "^snap_[0-9A-Z]{26}$"
+        },
+        "snapshot_hash": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "snapshot_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "captured_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "is_reversible": { "type": "boolean" }
+      }
+    }
+  }
+}

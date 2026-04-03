@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arc-protocol"
-version = "1.1.2"
+version = "1.1.3"
 description = "ARC (Agent Receipt and Certification): cryptographic proof of execution for AI agents"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -40,11 +40,12 @@ client = [
 ]
 
 # FastAPI log server (adds fastapi, uvicorn, pydantic)
+# Pinned to ranges with guaranteed pre-built wheels on all platforms (no Rust compilation)
 server = [
     "arc-protocol[client]",
-    "fastapi>=0.110.0",
-    "uvicorn>=0.29.0",
-    "pydantic>=2.0.0",
+    "fastapi>=0.110.0,<1.0.0",
+    "uvicorn[standard]>=0.29.0",
+    "pydantic>=2.5.0,<3.0.0",
 ]
 
 # Everything
@@ -74,10 +75,14 @@ Issues = "https://github.com/RamachandraKulkarni/arc-protocol/issues"
 
 [tool.setuptools]
 packages = ["arc", "arc_log"]
+include-package-data = true
 
 [tool.setuptools.package-dir]
 "arc" = "src/arc"
 "arc_log" = "arc_log"
+
+[tool.setuptools.package-data]
+arc = ["schemas/*.json"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

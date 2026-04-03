@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/inverse-operation.schema.json",
+  "title": "InverseOperation",
+  "$defs": {
+    "InverseOperation": {
+      "type": "object",
+      "required": ["is_reversible"],
+      "additionalProperties": false,
+      "properties": {
+        "is_reversible": {
+          "type": "boolean",
+          "description": "If false, all other fields are absent. Rollback is not possible."
+        },
+        "inverse_tool": {
+          "type": "string",
+          "description": "Name of the tool to call to undo this action."
+        },
+        "inverse_arguments": {
+          "type": "object",
+          "description": "Arguments to pass to inverse_tool."
+        },
+        "valid_until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp after which the inverse operation may no longer be available."
+        },
+        "inverse_signature": {
+          "type": "string",
+          "pattern": "^ed25519:[A-Za-z0-9+/]{86}==$",
+          "description": "Provider's Ed25519 signature over the inverse specification."
+        },
+        "estimated_duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "if": { "properties": { "is_reversible": { "const": true } } },
+      "then": {
+        "required": ["inverse_tool", "inverse_arguments", "valid_until", "inverse_signature"]
+      }
+    }
+  }
+}

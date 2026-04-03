@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/provider-registration.schema.json",
+  "title": "ProviderRegistration",
+  "type": "object",
+  "required": ["provider_id", "provider_name", "public_key_hex", "capabilities", "registered_at"],
+  "additionalProperties": false,
+  "properties": {
+    "provider_id": {
+      "type": "string",
+      "description": "Stable unique identifier. Format: 'tool:{name}:{version}' or a DID."
+    },
+    "provider_name": {
+      "type": "string",
+      "description": "Human-readable name (e.g. 'ARC Filesystem Tool v1')."
+    },
+    "public_key_hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "Ed25519 public key as 64-character lowercase hex (32 bytes)."
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of resource types this provider can act on and attest."
+    },
+    "registered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Null if active. Set to revocation timestamp if this provider's key is no longer trusted."
+    }
+  }
+}

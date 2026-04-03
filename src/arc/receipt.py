@@ -7,7 +7,6 @@ Phase 2: attest_execution (post-execution, signed, committed to log)
 import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
 from arc.ids import new_intent_id, new_receipt_id
 from arc.signing import (
@@ -26,11 +25,13 @@ def _now_iso() -> str:
 
 def _load_schema() -> dict:
     """Load the action-receipt schema for validation."""
-    schema_path = Path(__file__).parent.parent.parent / "schemas" / "action-receipt.schema.json"
-    if schema_path.exists():
-        with open(schema_path) as f:
-            return json.load(f)
-    return {}
+    try:
+        from importlib import resources
+
+        text = resources.files("arc").joinpath("schemas/action-receipt.schema.json").read_text()
+        return json.loads(text)
+    except Exception:
+        return {}
 
 
 @dataclass

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc-protocol.org/v1/schemas/log-entry.schema.json",
+  "title": "LogEntry",
+  "type": "object",
+  "required": [
+    "entry_id", "entry_type", "sequence_number", "content_hash",
+    "previous_root", "merkle_root", "timestamp", "log_signature"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "entry_id": {
+      "type": "string",
+      "pattern": "^log_[0-9A-Z]{26}$"
+    },
+    "entry_type": {
+      "type": "string",
+      "enum": ["intent", "receipt"]
+    },
+    "sequence_number": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^arc_[0-9A-Z]{26}$"
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "previous_root": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "merkle_root": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "log_signature": {
+      "type": "string",
+      "pattern": "^ed25519:[A-Za-z0-9+/]{86}==$"
+    }
+  }
+}
