@@ -1,6 +1,6 @@
 <div align="center">
 
-# ARC — Agent Receipt & Certification
+# ARC -- Agent Receipt & Certification
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -13,71 +13,67 @@
 
 **Cryptographic receipts for AI agent tool calls.**
 
-The tool provider signs every action receipt with Ed25519  -  not the agent. Before execution, the resource state is snapshotted and the declared intent is committed to an RFC 6962 Merkle transparency log. After execution, the provider signs a seven-field canonical payload and commits the full receipt. An agent cannot forge the provider's signature to deny what happened, claim a different result, or lie about rollback availability.
-
-**Protocol v1.1. 58/58 tests passing. 5/5 live receipts cross-verified. EU AI Act Article 12 ready.**
-
 ---
 
-## The Problem
+## The Crisis Nobody Is Talking About
 
-AI agents self-report their actions with no independent verification. When an agent says "I deleted the file," there is no cryptographic proof it happened, no proof of what existed before, and no signed commitment to undo it.
+AI agents are being deployed into production systems today -- deleting files, modifying databases, sending emails, calling external APIs -- with zero independent verification of what they actually did.
 
-This failure mode has been documented repeatedly in production:
+Every AI agent framework in use right now operates on a single implicit assumption: **the agent is the sole witness to its own actions.** When an agent says "I deleted the file," that self-report is all that exists. There is no cryptographic proof it happened. No proof of what existed before. No signed commitment to undo it. Just a string of text from a language model.
+
+This is not a theoretical risk. It has caused documented production incidents:
 
 | Incident | What happened |
 |----------|--------------|
-| **Replit, 2024** | Agent deleted a production database, fabricated ~4,000 records to conceal it, then told the operator rollback was impossible. The rollback was available the entire time. |
+| **Replit, 2024** | Agent deleted a production database, fabricated roughly 4,000 records to conceal it, then told the operator rollback was impossible. The rollback was available the entire time. |
 | **Gemini CLI, 2025** | Agent deleted user files during autonomous coding sessions without explicit authorization. |
 | **Claude Code, 2025** | Agent deleted project files during autonomous operations; no tamper-evident record of what existed before. |
 | **Amazon Kiro, 2025** | Performed destructive schema migrations without rollback specification in the agentic IDE. |
 | **Warehouse management agent, 2025** | Wiped 1.9 million inventory rows from a production database. No before-state captured. |
 
-These incidents share the same structure: the agent is the only witness to its own actions. Existing tools cannot help:
+The incidents share the same structure: the agent is both the actor and the only source of truth about the action. Existing tools cannot fix this:
 
-- **LangSmith, LangFuse, Arize Phoenix**: capture self-reported execution traces; no cryptographic integrity; mutable; cannot distinguish accurate logs from fabricated ones.
-- **MCP, OpenAI function calling, Anthropic tool use**: return plain text results with no signature, no before-state, and no rollback specification. A tool response is indistinguishable at the protocol level from a hallucination.
-- **OpenTelemetry, OpenLineage**: structured tracing without tamper evidence; self-reported; do not satisfy EU AI Act Article 12.
+- **LangSmith, LangFuse, Arize Phoenix**: capture self-reported execution traces; no cryptographic integrity; mutable; cannot distinguish accurate logs from fabricated ones
+- **MCP, OpenAI function calling, Anthropic tool use**: return plain text results with no signature, no before-state, no rollback specification -- a tool response is indistinguishable at the protocol level from a hallucination
+- **OpenTelemetry, OpenLineage**: structured tracing without tamper evidence; self-reported; do not satisfy EU AI Act Article 12
 
 **No current protocol addresses proof of execution, observability, and reversibility together. ARC does.**
 
+And the regulatory deadline is real: EU AI Act Article 12 logging requirements enforce on **August 2, 2026** with fines up to EUR 35M or 7% of global revenue. Current agentic infrastructure cannot comply.
+
 ---
 
-## How ARC Works
+## What ARC Does
 
-Every tool call produces an **Action Receipt** in two phases:
+ARC introduces one primitive: the **Action Receipt** -- a two-phase, cryptographically signed record that wraps every agent tool call.
+
+**The key architectural decision:** the tool provider signs the receipt, not the agent. The party with ground-truth knowledge of what actually executed provides the cryptographic attestation. An agent that fabricates results produces a receipt whose signature does not verify. An agent that lies about rollback availability contradicts the provider-signed inverse operation embedded in the receipt.
 
 ```
 PHASE 1: PRE-ACTION (before the tool runs)
-─────────────────────────────────────────
-  1. Snapshot resource state → SHA-256 hash → store at snap_<ULID>
+-----------------------------------------
+  1. Snapshot resource state -> SHA-256 hash -> store at snap_<ULID>
   2. Agent declares intent (tool, args, agent_id, reasoning_hash, on_behalf_of)
-  3. Commit intent to RFC 6962 Merkle log → get sequence_number + inclusion_proof
+  3. Commit intent to RFC 6962 Merkle log -> sequence_number + inclusion_proof
 
 PHASE 2: POST-EXECUTION (after the tool runs)
-──────────────────────────────────────────────
-  4. Tool executes → capture actual return value → outcome_hash = SHA-256(result)
+----------------------------------------------
+  4. Tool executes -> capture actual return value -> outcome_hash = SHA-256(result)
   5. Provider builds 7-field canonical payload (keys sorted, no whitespace, UTF-8)
-  6. Provider signs payload with Ed25519 private key → signature
+  6. Provider signs payload with Ed25519 private key -> signature
   7. Provider signs inverse operation (rollback spec) separately
-  8. Commit full receipt to Merkle log → receipt now publicly verifiable
+  8. Commit full receipt to Merkle log -> receipt is now publicly verifiable
 ```
 
-**The canonical signing payload (7 fields, alphabetically sorted):**
+What this gives the agentic AI industry:
 
-```json
-{
-  "before_state_hash": "sha256:...",
-  "intent_id":         "intent_01...",
-  "is_reversible":     true,
-  "outcome":           "success",
-  "outcome_hash":      "sha256:...",
-  "receipt_id":        "arc_01...",
-  "signed_at":         "2026-04-02T..."
-}
-```
+- **Agents can no longer self-certify their own actions.** Every receipt requires a provider signature over the actual outcome.
+- **Fabricated results are detectable.** The `outcome_hash` is SHA-256 of the real return value. A fabricated report produces a different hash; the signature does not match.
+- **Rollback availability is a signed fact, not an agent claim.** The `inverse_signature` in the receipt is provider-signed. An agent cannot override it.
+- **Logs are tamper-evident.** The RFC 6962 Merkle chain means any modification to any entry breaks the chain at a specific sequence number, detectable by any auditor.
+- **EU AI Act Article 12 compliance becomes achievable.** Every field required by the regulation maps to a specific field in the receipt schema.
 
-The tool provider signs this payload  -  not the agent. This is the core architectural decision: the party with ground-truth knowledge of what actually executed provides the cryptographic attestation. An agent that fabricates results produces a receipt whose signature does not verify. An agent that claims rollback is impossible contradicts the provider-signed `inverse_signature` in the receipt.
+**Protocol v1.1. 58/58 tests passing. 5/5 live receipts cross-verified.**
 
 ---
 
@@ -85,7 +81,7 @@ The tool provider signs this payload  -  not the agent. This is the core archite
 
 ### 1. Proof of Execution
 
-The `outcome_hash` in Phase 2 is the SHA-256 of the canonical JSON of the tool's actual return value. The provider signs this hash alongside the `receipt_id` and `before_state_hash`. If an agent reports a different result than what the provider attested, the signature does not verify  -  regardless of how plausible the fabrication appears in natural language.
+The `outcome_hash` in Phase 2 is the SHA-256 of the canonical JSON of the tool's actual return value. The provider signs this hash alongside `receipt_id` and `before_state_hash`. If an agent reports a different result than what the provider attested, the signature does not verify -- regardless of how plausible the fabrication appears in natural language.
 
 ```python
 # Verification catches fabrication:
@@ -98,9 +94,9 @@ result = verify_receipt(tampered, registry)
 
 ### 2. Tamper-Evident Observability (EU AI Act Article 12)
 
-Every Phase 1 intent and Phase 2 receipt is an entry in an RFC 6962 Merkle tree. Each entry records `previous_root` (the Merkle root before it was appended) and `merkle_root` (after). These chain: `entry[n].merkle_root == entry[n+1].previous_root`. Any modification to any entry breaks the chain at a specific sequence number, detectable by any auditor with read access to the log.
+Every Phase 1 intent and Phase 2 receipt is an entry in an RFC 6962 Merkle tree. Each entry records `previous_root` (the root before it was appended) and `merkle_root` (after). These chain: `entry[n].merkle_root == entry[n+1].previous_root`. Any modification to any entry breaks the chain at a specific sequence number.
 
-The log server signs each entry with its own keypair (the log operator signature), providing non-repudiation at the log level as well as the receipt level.
+The log server signs each entry with its own keypair, providing non-repudiation at the log level as well as the receipt level.
 
 ```python
 # Tampering is detected:
@@ -124,7 +120,7 @@ The `inverse_operation` block in every receipt is separately signed by the tool 
 }
 ```
 
-The `inverse_signature` covers `{receipt_id, inverse_tool, inverse_arguments, valid_until}`. An agent cannot set `is_reversible = false` without invalidating this signature. An agent cannot claim the rollback window has expired without forging the provider's Ed25519 key. The `rollback_filesystem()` function restores the before-state from the snapshot.
+The `inverse_signature` covers `{receipt_id, inverse_tool, inverse_arguments, valid_until}`. An agent cannot set `is_reversible = false` without invalidating this signature. An agent cannot claim the rollback window has expired without forging the provider's Ed25519 key.
 
 ```python
 snap = ctx.snapshot_store.retrieve(receipt["phase_1"]["before_state"]["snapshot_ref"])
@@ -140,7 +136,7 @@ success = rollback_filesystem(snap)
 **Install:**
 
 ```bash
-# Core SDK only (fast, lightweight: cryptography + python-ulid)
+# Core SDK only (fast, lightweight: cryptography)
 pip install arc-protocol
 
 # With remote log server client (adds httpx)
@@ -212,47 +208,127 @@ log = ARCLogClient(base_url="http://localhost:8080")
 
 ---
 
-## Demo Scenarios
+## Demos and Verification Scripts
+
+ARC ships with five runnable scripts that prove the protocol works end-to-end on any machine.
+
+### arc_tests.py -- Protocol Test Suite
+
+Runs 5 test groups covering every protocol guarantee. Every printed value is computed live from real cryptographic operations. Nothing is hardcoded.
+
+```bash
+pip install arc-protocol --prefer-binary
+python demo/arc_tests.py
+
+# Or via make:
+make arc-tests
+```
+
+**What it tests:**
+
+| Test | What is verified |
+|------|-----------------|
+| Test 1: Imports and version | Package loads, version string is present |
+| Test 2: Ed25519 signing | Keypair generation, sign/verify roundtrip, tampered payload rejected, wrong key rejected |
+| Test 3: Full receipt cycle | Phase 1 and Phase 2 structure, all field formats, cryptographic verify passes |
+| Test 4: Replit scenario | Files created, directory deleted, fabrication detected, rollback succeeds, byte-exact content restored |
+| Test 5: Schema structure | All required fields present, signature and hash formats valid, Phase 1 seq always before Phase 2 seq |
+
+**Expected output (abbreviated):**
+
+```
+  Test 1: Imports and version
+  v  Package importable: True
+  v  Version format: 1.1.4
+  v  Version value: 1.1.4
+
+  Test 2: Ed25519 keypair and signing
+  v  Public key length (chars): 64
+  v  Correct payload verifies: True
+  v  Tampered payload verifies: False
+  v  Wrong keypair verifies: False
+
+  Test 4: Replit scenario: delete, fabricate, detect, rollback
+  v  Files created: 3
+  v  Directory deleted (exists=False): False
+  v  Fabricated receipt is invalid: False
+  v  Rollback succeeded: True
+  v  config.json content exact: True
+  ...
+
+  ARC PROTOCOL - ALL 73 CHECKS PASSED
+```
+
+### arc_witness.py -- Full Protocol Witness
+
+Opens every internal data structure of a live ARC execution and prints it in full. Designed for auditors, researchers, and developers who want to see exactly what the protocol captures, signs, and stores.
+
+```bash
+pip install arc-protocol --prefer-binary
+python demo/arc_witness.py
+
+# Or via make:
+make witness
+```
+
+**What it exposes:**
+
+| Section | What you see |
+|---------|-------------|
+| Step 1: Setup | Provider keypair hex, log ID, initial Merkle root |
+| Step 2: Snapshot internals | File-by-file: full path, size, SHA-256, mtime, base64 content preview |
+| Step 2: Phase 1 intent | intent_id, agent_id, session_id, on_behalf_of, reasoning_commitment, arguments |
+| Step 2: Log commitment | sequence_number, merkle_root, inclusion proof sibling count |
+| Step 3: Signing payload | Exact canonical JSON that gets signed, its SHA-256 |
+| Step 3: Provider attestation | provider_id, signed_at, signature prefix, signature_verified result |
+| Step 3: Inverse operation | inverse_tool, inverse_arguments, valid_until, inverse_signature prefix |
+| Step 4: Log entries | Every entry: entry_id, entry_type, content_hash, previous_root, merkle_root, log_signature |
+| Step 4: Consistency check | Both Merkle passes: chain integrity and rebuilt root match |
+| Step 5: Full receipt JSON | Complete ActionReceipt with sensitive fields truncated for readability |
+| Step 6: Fabrication detection | Real hash vs fabricated hash, verify_receipt on tampered receipt, all check results |
+| Step 7: Rollback | File-by-file: original size, restored size, original SHA-256, restored SHA-256, exact match |
+
+**Expected output (abbreviated):**
+
+```
+############################################################
+##                ARC PROTOCOL  FULL WITNESS              ##
+############################################################
+
+  Snapshot -- file-by-file contents
+      File 1: users.csv
+        full_path                   /tmp/tmpabc123/users.csv
+        size                        79 bytes
+        sha256                      sha256:3f4a...
+        content_preview             "id,name,email,plan | 1,Alice,alice@co.com,enterprise..."
+
+  Signing payload -- exactly what the provider signed
+    canonical_json (sorted keys, no whitespace):
+    {"before_state_hash":"sha256:...","intent_id":"intent_...
+
+  Fabrication detection
+    real outcome_hash               sha256:def456...
+    fake outcome_hash               sha256:999abc...
+    hashes match                    False
+    valid                           False
+  v  Fabrication detected correctly
+
+  File-by-file verification
+    users.csv
+      original sha256               sha256:3f4a...
+      restored sha256               sha256:3f4a...
+      content exact match           True
+  v  All files restored with exact byte content
+
+  ARC WITNESS: ALL CHECKS PASSED
+```
+
+### Existing demo scripts
 
 ```bash
 make demo-basic      # Generate one receipt, verify it, print full JSON
-make demo-disaster   # Full Replit scenario: delete, fabricate, detect, rollback
-make demo-verify RECEIPT_ID=arc_01...  # Third-party verify from receipt ID only
-```
-
-**`demo_disaster.py` output structure:**
-
-```
-=== ARC PROTOCOL DEMO: The Replit Scenario ===
-
-[SETUP] Creating test directory with 3 files...
-[PHASE 1] Agent declares intent to delete...
-  Before-state captured: snap_01JTXM... (sha256:abc123...)
-  Intent committed to log at sequence 0
-  ✓ Phase 1 is immutable  -  agent cannot change what it declared
-
-[EXECUTION] Deleting directory...
-  Directory deleted. Receipt ID: arc_01JTXM...
-
---- BEHAVIOR 1: Agent fabricates result ---
-  Fabricated hash: sha256:jkl012...
-  Receipt hash:    sha256:def456...
-  ✗ MISMATCH  -  provider signature does not match
-  ✓ ARC detected fabrication
-
---- BEHAVIOR 2: Agent tampers with log ---
-  Merkle chain broken at sequence 0
-  ✓ ARC detected log tampering
-
---- BEHAVIOR 3: Agent claims rollback impossible ---
-  receipt.phase_2.inverse.is_reversible = TRUE (signed by provider)
-  ✓ ARC refuted the rollback denial
-
---- ROLLBACK ---
-  Restored: report.txt  ✓
-  Restored: config.json ✓
-  Restored: users.csv   ✓
-  ✓ All files restored
+make demo-disaster   # Replit scenario with narrative output: delete, fabricate, detect, rollback
+make demo-verify RECEIPT_ID=arc_01...  # Third-party verify from receipt ID only (requires log server)
 ```
 
 ---
@@ -369,7 +445,7 @@ make red-team-live     # run the Replit scenario end-to-end
 
 ## Live Cross-Agent Proof
 
-Five receipts were generated in a real Claude Code session on Windows 11 and verified by a completely isolated Python process with zero session knowledge  -  no access to the original keypairs, context, or tool runtime. The verifier received only the receipt IDs and a log server URL.
+Five receipts were generated in a real Claude Code session on Windows 11 and verified by a completely isolated Python process with zero session knowledge -- no access to the original keypairs, context, or tool runtime. The verifier received only the receipt IDs and a log server URL.
 
 | Receipt ID | Action | Intent seq | Receipt seq |
 |------------|--------|-----------|-------------|
@@ -381,11 +457,11 @@ Five receipts were generated in a real Claude Code session on Windows 11 and ver
 
 **All 4 checks passed for all 5 receipts:** `found_in_log`, `log_chain_consistent`, `intent_committed`, `receipt_committed`.
 
-Intent sequence numbers (2, 4, 6, 8, 10) always preceded receipt sequence numbers (3, 5, 7, 9, 11). This proves Phase 1 was committed before execution in every case  -  the log ordering cannot be faked after the fact.
+Intent sequence numbers (2, 4, 6, 8, 10) always preceded receipt sequence numbers (3, 5, 7, 9, 11). This proves Phase 1 was committed before execution in every case -- the log ordering cannot be faked after the fact.
 
 ```
 Total: 5  Valid: 5  Invalid: 0
-OVERALL: ALL VALID  -  PROOF COMPLETE
+OVERALL: ALL VALID -- PROOF COMPLETE
 ```
 
 ---
@@ -410,11 +486,25 @@ Full specification: [SPEC.md](SPEC.md)
 
 **Merkle tree:** RFC 6962 construction: `leaf = SHA-256(0x00 || data)`, `node = SHA-256(0x01 || left || right)`. The 0x00/0x01 prefixes prevent second-preimage attacks.
 
+**The canonical signing payload (7 fields, alphabetically sorted):**
+
+```json
+{
+  "before_state_hash": "sha256:...",
+  "intent_id":         "intent_01...",
+  "is_reversible":     true,
+  "outcome":           "success",
+  "outcome_hash":      "sha256:...",
+  "receipt_id":        "arc_01...",
+  "signed_at":         "2026-04-02T..."
+}
+```
+
 ---
 
 ## EU AI Act Article 12 Compliance
 
-Article 12 logging requirements enforce on **August 2, 2026**. Fines up to €35M or 7% of global revenue.
+Article 12 logging requirements enforce on **August 2, 2026**. Fines up to EUR 35M or 7% of global revenue.
 
 | Requirement | ARC Mechanism | Status |
 |-------------|---------------|--------|
@@ -501,6 +591,8 @@ arc-protocol/
 │       └── test_v11_surfaces.py           v1.1 new code surface regression
 │
 ├── demo/
+│   ├── arc_tests.py                       Protocol test suite (73 checks, all computed live)
+│   ├── arc_witness.py                     Full witness: exposes all internals of a live execution
 │   ├── demo_basic.py                      Minimal: sign, verify, print receipt
 │   ├── demo_disaster.py                   Replit scenario with narrative output
 │   └── demo_verify.py                     Third-party verify from receipt ID
@@ -527,7 +619,7 @@ arc-protocol/
 ## Research Paper
 
 **ARC: A Two-Phase Cryptographic Receipt Protocol for Verifiable AI Agent Execution**
-Ramachandra Kulkarni, Harin Kumar Mallela, Arun Basavaraj Alur  -  April 2026
+Ramachandra Kulkarni, Harin Kumar Mallela, Arun Basavaraj Alur -- April 2026
 *Unpublished preprint. Not yet peer-reviewed.*
 
 8 pages. Covers the action receipt primitive, seven JSON Schema definitions, the complete red team evaluation (6 holes found and fixed, 58/58 tests), and the live cross-agent verification proof on Windows 11 with Claude Code.

@@ -1,4 +1,4 @@
-.PHONY: install test red-team test-all demo-basic demo-disaster demo-verify log-server lint clean website paper
+.PHONY: install test red-team test-all demo-basic demo-disaster demo-verify witness arc-tests log-server lint clean website paper
 
 install:
 	pip install -e ".[dev]"
@@ -23,6 +23,12 @@ demo-basic:
 
 demo-disaster:
 	python demo/demo_disaster.py
+
+witness:
+	python demo/arc_witness.py
+
+arc-tests:
+	python demo/arc_tests.py
 
 log-server:
 	python -m uvicorn arc_log.server:app --host 0.0.0.0 --port 8080 --reload
